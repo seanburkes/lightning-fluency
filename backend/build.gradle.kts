@@ -45,6 +45,9 @@ dependencies {
   // SQLite
   implementation("org.xerial:sqlite-jdbc:3.47.1.0")
 
+  // Connection Pooling
+  implementation("com.zaxxer:HikariCP:6.2.1")
+
   // Koin DI
   implementation("io.insert-koin:koin-ktor:$koinVersion")
   implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
