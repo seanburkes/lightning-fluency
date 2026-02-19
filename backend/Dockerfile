@@ -1,0 +1,13 @@
+FROM gradle:8.12-jdk21 AS build
+WORKDIR /app
+COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+COPY gradle ./gradle
+COPY src ./src
+RUN gradle buildFatJar --no-daemon
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/build/libs/lute-backend.jar app.jar
+ENV LUTE_DB_PATH=/data/lute.db
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
