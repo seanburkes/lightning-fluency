@@ -7,7 +7,10 @@ import org.jetbrains.exposed.sql.Database
 object DatabaseFactory {
   private var dataSource: HikariDataSource? = null
 
-  fun init(dbPath: String = System.getenv("LUTE_DB_PATH") ?: "/data/lute.db") {
+  var database: Database? = null
+    private set
+
+  fun init(dbPath: String = System.getenv("LUTE_DB_PATH") ?: "/data/lute.db"): Database {
     val config =
         HikariConfig().apply {
           driverClassName = "org.sqlite.JDBC"
@@ -19,10 +22,13 @@ object DatabaseFactory {
         }
 
     dataSource = HikariDataSource(config)
-    Database.connect(dataSource!!)
+    val db = Database.connect(dataSource!!)
+    database = db
+    return db
   }
 
   fun shutdown() {
     dataSource?.close()
+    database = null
   }
 }
