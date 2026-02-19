@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-format
+        name: Backend format check (ktfmt)
+        entry: bash -c 'cd backend && ./gradlew ktfmtCheck --no-daemon'
+        language: system
+        files: '\.kts?$'
+        pass_filenames: false
+
+      - id: backend-lint
+        name: Backend lint (ktlint)
+        entry: bash -c 'cd backend && ./gradlew ktlintCheck --no-daemon'
+        language: system
+        files: '\.kts?$'
+        pass_filenames: false
+
+      - id: frontend-format
+        name: Frontend format check (Prettier)
+        entry: bash -c 'cd frontend && npx prettier --check .'
+        language: system
+        files: '^frontend/'
+        pass_filenames: false
+
+      - id: frontend-lint
+        name: Frontend lint (ESLint)
+        entry: bash -c 'cd frontend && npx eslint .'
+        language: system
+        files: '^frontend/'
+        pass_filenames: false

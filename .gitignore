@@ -1,0 +1,33 @@
+# OpenSpec workflow artifacts
+openspec/
+.opencode/
+
+# Backend
+backend/build/
+backend/.gradle/
+backend/.kotlin/
+backend/out/
+
+# Frontend
+frontend/node_modules/
+frontend/.svelte-kit/
+frontend/build/
+frontend/dist/
+
+# Docker volumes
+data/
+backups/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
