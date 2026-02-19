@@ -8,16 +8,33 @@ services:
     environment:
       - LUTE_DB_PATH=/data/lute.db
     volumes:
-      - ./data:/data
-      - ./backups:/backups
+      - lute-data:/data
+      - lute-backups:/backups
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "java -version || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "3000:8080"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  lute-data:
+  lute-backups:
