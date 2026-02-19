@@ -1,11 +1,11 @@
-FROM gradle:8.12-jdk21 AS build
+FROM docker.io/library/gradle:8.12-jdk21 AS build
 WORKDIR /app
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
 COPY gradle ./gradle
 COPY src ./src
 RUN gradle buildFatJar --no-daemon
 
-FROM eclipse-temurin:21-jre-alpine
+FROM docker.io/library/eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 RUN addgroup -g 1000 -S appgroup && \
