@@ -13,5 +13,9 @@ object LanguagesTable : Table("languages") {
   val LgShowRomanization = integer("LgShowRomanization").default(0)
   val LgParserType = varchar("LgParserType", 20).default("spacedel")
 
+  init {
+    uniqueIndex("idx_languages_name", LgName)
+  }
+
   override val primaryKey = PrimaryKey(LgID)
 }

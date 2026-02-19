@@ -7,5 +7,9 @@ object TagsTable : Table("tags") {
   val TgText = varchar("TgText", 20)
   val TgComment = varchar("TgComment", 200)
 
+  init {
+    uniqueIndex("idx_tags_text", TgText)
+  }
+
   override val primaryKey = PrimaryKey(TgID)
 }

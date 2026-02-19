@@ -13,5 +13,9 @@ object BooksTable : Table("books") {
   val BkAudioCurrentPos = float("BkAudioCurrentPos").nullable()
   val BkAudioBookmarks = text("BkAudioBookmarks").nullable()
 
+  init {
+    index(customIndexName = "idx_books_lgid", columns = arrayOf(BkLgID))
+  }
+
   override val primaryKey = PrimaryKey(BkID)
 }

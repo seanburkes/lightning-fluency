@@ -16,5 +16,13 @@ object WordsTable : Table("words") {
   val WoStatusChanged = datetime("WoStatusChanged")
   val WoSyncStatus = integer("WoSyncStatus").default(0)
 
+  init {
+    index(customIndexName = "idx_words_lgid", columns = arrayOf(WoLgID))
+    index(customIndexName = "idx_words_status", columns = arrayOf(WoStatus))
+    index(customIndexName = "idx_words_status_changed", columns = arrayOf(WoStatusChanged))
+    index(customIndexName = "idx_words_textlc", columns = arrayOf(WoTextLC))
+    uniqueIndex("idx_words_textlc_lgid", WoTextLC, WoLgID)
+  }
+
   override val primaryKey = PrimaryKey(WoID)
 }
