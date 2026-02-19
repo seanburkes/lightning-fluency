@@ -1,5 +1,7 @@
 package com.lute
 
+import com.lute.di.ServiceLocator
+import com.lute.domain.ErrorResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -9,17 +11,10 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-@Serializable data class HealthResponse(val status: String)
-
 fun Application.module() {
-  install(ContentNegotiation) {
-    json(
-        Json { prettyPrint = true },
-    )
-  }
+  install(ContentNegotiation) { json(Json { prettyPrint = true }) }
 
   install(StatusPages) {
     exception<Throwable> { call, cause ->
@@ -27,12 +22,15 @@ fun Application.module() {
       cause.printStackTrace()
       call.respond(
           HttpStatusCode.InternalServerError,
-          mapOf("error" to "Internal server error"),
+          ErrorResponse(error = "Internal server error"),
       )
     }
   }
 
-  routing { get("/api/health") { call.respond(HealthResponse(status = "ok")) } }
+  routing {
+    val healthRoute = ServiceLocator.healthRoute
+    healthRoute.register(this)
+  }
 }
 
 fun main() {
