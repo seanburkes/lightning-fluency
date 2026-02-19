@@ -15,6 +15,7 @@ object BooksTable : Table("books") {
 
   init {
     index(customIndexName = "idx_books_lgid", columns = arrayOf(BkLgID))
+    index(customIndexName = "idx_books_lgid_archived", columns = arrayOf(BkLgID, BkArchived))
   }
 
   override val primaryKey = PrimaryKey(BkID)

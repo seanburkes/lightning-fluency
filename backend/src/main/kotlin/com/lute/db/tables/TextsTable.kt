@@ -12,5 +12,9 @@ object TextsTable : Table("texts") {
   val TxWordCount = integer("TxWordCount").nullable()
   val TxStartDate = datetime("TxStartDate").nullable()
 
+  init {
+    index(customIndexName = "idx_texts_book_order", columns = arrayOf(TxBkID, TxOrder))
+  }
+
   override val primaryKey = PrimaryKey(TxID)
 }
