@@ -1,5 +1,6 @@
 {
-	"name": "frontend",
+	"name": "lightning-fluency-frontend",
+	"description": "Lightning Fluency frontend - Language learning through evidence-based educational theories",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",

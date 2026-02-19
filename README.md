@@ -1,6 +1,8 @@
-# Lute - Language Learning
+# Lightning Fluency
 
-Lute helps you learn languages by reading texts. This repository contains both v3 (Python/Flask) and v4 (Kotlin/SvelteKit).
+Lightning Fluency is a language learning application designed to explore evidence-based educational theories of language acquisition through interactive reading experiences.
+
+> **Note:** This project began as a fork of the original [Lute v3](https://github.com/jzohrab/lute-v3) repository. While Lute v3 (Python/Flask) focused on traditional vocabulary acquisition through reading, Lightning Fluency (v4, Kotlin/SvelteKit) extends this foundation to research and implement pedagogical approaches grounded in contemporary language acquisition theory.
 
 ## v4 Development
 
@@ -57,7 +59,7 @@ docker-compose up --build
 ```
 
 - Backend: http://localhost:8080
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:5173 (dev) or http://localhost:3000 (Docker)
 - Health check: http://localhost:8080/api/health
 
 ### Code Quality

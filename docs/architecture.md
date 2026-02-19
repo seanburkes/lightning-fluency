@@ -1,8 +1,16 @@
-# Lute v4 Architecture
+# Lightning Fluency Architecture
 
 ## Overview
 
-Lute v4 is a language learning application built as a monorepo with a Kotlin/Ktor backend and SvelteKit frontend.
+Lightning Fluency is a language learning application built as a monorepo with a Kotlin/Ktor backend and SvelteKit frontend. Originally forked from Lute v3, this project focuses on exploring and implementing evidence-based educational theories of language acquisition.
+
+## Research Focus
+
+This application serves as a platform for experimenting with pedagogical approaches grounded in contemporary language acquisition research, including:
+- Comprehensible input theory
+- Spaced repetition optimization
+- Contextual vocabulary acquisition
+- Multi-modal learning (visual, auditory, textual)
 
 ## Project Structure
 

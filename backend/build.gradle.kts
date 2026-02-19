@@ -8,7 +8,10 @@ plugins {
 
 group = "com.lute"
 
-version = "0.0.1"
+version = "0.1.0"
+
+description =
+    "Lightning Fluency backend - Language learning through evidence-based educational theories"
 
 application { mainClass.set("com.lute.ApplicationKt") }
 
