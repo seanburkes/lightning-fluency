@@ -1,5 +1,7 @@
 package com.lute
 
+import com.lute.db.DatabaseFactory
+import com.lute.db.migrations.MigrationManager
 import com.lute.di.ServiceLocator
 import com.lute.domain.ErrorResponse
 import io.ktor.http.HttpStatusCode
@@ -14,6 +16,9 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 
 fun Application.module() {
+  val db = DatabaseFactory.database ?: DatabaseFactory.init()
+  MigrationManager(db).runMigrations()
+
   install(ContentNegotiation) { json(Json { prettyPrint = true }) }
 
   install(StatusPages) {
