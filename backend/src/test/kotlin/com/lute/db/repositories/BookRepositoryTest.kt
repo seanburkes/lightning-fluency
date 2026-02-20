@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class BookRepositoryTest : DatabaseTestBase() {
   private val langRepo = LanguageRepository()
   private val repo = BookRepository()
-  private var langId: Int = 0
+  private var langId: Long = 0
 
   @BeforeEach
   fun seedLanguage() {
@@ -80,7 +80,7 @@ class BookRepositoryTest : DatabaseTestBase() {
   fun `updateCurrentPage sets current text id`() {
     val id = repo.save(Book(languageId = langId, title = "Reading"))
     repo.updateCurrentPage(id, 42)
-    assertEquals(42, repo.findById(id)!!.currentTextId)
+    assertEquals(42L, repo.findById(id)!!.currentTextId)
   }
 
   @Test
@@ -100,7 +100,7 @@ class BookRepositoryTest : DatabaseTestBase() {
             archived = true,
             currentTextId = 5,
             audioFilename = "audio.mp3",
-            audioCurrentPos = 12.5f,
+            audioCurrentPos = 12.5,
             audioBookmarks = "0:10,1:20",
         )
     val id = repo.save(book)
@@ -108,9 +108,9 @@ class BookRepositoryTest : DatabaseTestBase() {
     assertEquals("Full Book", found.title)
     assertEquals("http://example.com", found.sourceURI)
     assertTrue(found.archived)
-    assertEquals(5, found.currentTextId)
+    assertEquals(5L, found.currentTextId)
     assertEquals("audio.mp3", found.audioFilename)
-    assertEquals(12.5f, found.audioCurrentPos)
+    assertEquals(12.5, found.audioCurrentPos)
     assertEquals("0:10,1:20", found.audioBookmarks)
   }
 }

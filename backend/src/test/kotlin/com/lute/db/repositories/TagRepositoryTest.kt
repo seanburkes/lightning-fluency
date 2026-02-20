@@ -15,7 +15,7 @@ class TagRepositoryTest : DatabaseTestBase() {
   private val langRepo = LanguageRepository()
   private val termRepo = TermRepository()
   private val repo = TagRepository()
-  private var langId: Int = 0
+  private var langId: Long = 0
 
   @BeforeEach
   fun seedLanguage() {

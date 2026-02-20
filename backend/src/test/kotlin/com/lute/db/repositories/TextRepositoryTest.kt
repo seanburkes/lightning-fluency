@@ -15,7 +15,7 @@ class TextRepositoryTest : DatabaseTestBase() {
   private val langRepo = LanguageRepository()
   private val bookRepo = BookRepository()
   private val repo = TextRepository()
-  private var bookId: Int = 0
+  private var bookId: Long = 0
 
   @BeforeEach
   fun seedData() {

@@ -16,8 +16,8 @@ class BookStatsRepositoryTest : DatabaseTestBase() {
   private val bookRepo = BookRepository()
   private val termRepo = TermRepository()
   private val repo = BookStatsRepository()
-  private var langId: Int = 0
-  private var bookId: Int = 0
+  private var langId: Long = 0
+  private var bookId: Long = 0
 
   @BeforeEach
   fun seedData() {

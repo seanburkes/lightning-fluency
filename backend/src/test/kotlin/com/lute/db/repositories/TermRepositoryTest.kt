@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class TermRepositoryTest : DatabaseTestBase() {
   private val langRepo = LanguageRepository()
   private val repo = TermRepository()
-  private var langId: Int = 0
+  private var langId: Long = 0
 
   @BeforeEach
   fun seedLanguage() {
