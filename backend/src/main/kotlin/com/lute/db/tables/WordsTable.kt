@@ -5,8 +5,8 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 
 object WordsTable : Table("words") {
-  val WoID = integer("WoID").autoIncrement()
-  val WoLgID = integer("WoLgID").references(LanguagesTable.LgID)
+  val WoID = long("WoID").autoIncrement()
+  val WoLgID = long("WoLgID").references(LanguagesTable.LgID)
   val WoText = varchar("WoText", 250)
   val WoTextLC = varchar("WoTextLC", 250)
   val WoStatus = integer("WoStatus").default(0)

@@ -3,7 +3,7 @@ package com.lute.db.tables
 import org.jetbrains.exposed.sql.Table
 
 object LanguagesTable : Table("languages") {
-  val LgID = integer("LgID").autoIncrement()
+  val LgID = long("LgID").autoIncrement()
   val LgName = varchar("LgName", 40)
   val LgCharacterSubstitutions = varchar("LgCharacterSubstitutions", 500).nullable()
   val LgRegexpSplitSentences = varchar("LgRegexpSplitSentences", 500).nullable()
