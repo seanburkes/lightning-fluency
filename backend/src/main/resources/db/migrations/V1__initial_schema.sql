@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS statuses (
   StText VARCHAR(20) NOT NULL,
   StAbbreviation VARCHAR(5) NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_statuses_text ON statuses (StText);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_statuses_abbreviation ON statuses (StAbbreviation);
 
 -- Tag tables
 
@@ -82,6 +84,7 @@ CREATE TABLE IF NOT EXISTS tags2 (
   T2Text VARCHAR(20) NOT NULL,
   T2Comment VARCHAR(200) NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tags2_text ON tags2 (T2Text);
 
 CREATE TABLE IF NOT EXISTS wordtags (
   WtWoID INTEGER NOT NULL REFERENCES words(WoID),
@@ -102,6 +105,8 @@ CREATE TABLE IF NOT EXISTS wordparents (
   WpParentWoID INTEGER NOT NULL REFERENCES words(WoID),
   PRIMARY KEY (WpWoID, WpParentWoID)
 );
+CREATE INDEX IF NOT EXISTS idx_wordparents_woid ON wordparents (WpWoID);
+CREATE INDEX IF NOT EXISTS idx_wordparents_parent_woid ON wordparents (WpParentWoID);
 
 CREATE TABLE IF NOT EXISTS sentences (
   SeID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,6 +115,7 @@ CREATE TABLE IF NOT EXISTS sentences (
   SeText TEXT,
   SeTextLC TEXT
 );
+CREATE INDEX IF NOT EXISTS idx_sentences_txid_order ON sentences (SeTxID, SeOrder);
 
 -- Supporting tables
 
@@ -120,11 +126,11 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 CREATE TABLE IF NOT EXISTS bookstats (
-  BkID INTEGER PRIMARY KEY REFERENCES books(BkID),
-  distinctterms INTEGER,
-  distinctunknowns INTEGER,
-  unknownpercent INTEGER,
-  status_distribution VARCHAR(100)
+  BsBkID INTEGER PRIMARY KEY REFERENCES books(BkID),
+  BsDistinctTerms INTEGER,
+  BsDistinctUnknowns INTEGER,
+  BsUnknownPercent INTEGER,
+  BsStatusDistribution VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS wordimages (
@@ -132,12 +138,14 @@ CREATE TABLE IF NOT EXISTS wordimages (
   WiWoID INTEGER NOT NULL REFERENCES words(WoID),
   WiSource VARCHAR(500) NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_wordimages_woid ON wordimages (WiWoID);
 
 CREATE TABLE IF NOT EXISTS wordflashmessages (
   WfID INTEGER PRIMARY KEY AUTOINCREMENT,
   WfWoID INTEGER NOT NULL REFERENCES words(WoID),
   WfMessage VARCHAR(200) NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_wordflashmessages_woid ON wordflashmessages (WfWoID);
 
 CREATE TABLE IF NOT EXISTS wordsread (
   WrID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -146,6 +154,8 @@ CREATE TABLE IF NOT EXISTS wordsread (
   WrReadDate DATETIME NOT NULL,
   WrWordCount INTEGER NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_wordsread_lgid ON wordsread (WrLgID);
+CREATE INDEX IF NOT EXISTS idx_wordsread_txid ON wordsread (WrTxID);
 
 CREATE TABLE IF NOT EXISTS srsexportspecs (
   SrsID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -156,12 +166,14 @@ CREATE TABLE IF NOT EXISTS srsexportspecs (
   SrsFieldMapping VARCHAR(1000) NOT NULL,
   SrsActive INTEGER NOT NULL DEFAULT 1
 );
+CREATE INDEX IF NOT EXISTS idx_srsexportspecs_active ON srsexportspecs (SrsActive);
 
 CREATE TABLE IF NOT EXISTS textbookmarks (
   TbID INTEGER PRIMARY KEY AUTOINCREMENT,
   TbTxID INTEGER NOT NULL REFERENCES texts(TxID),
   TbTitle TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_textbookmarks_txid ON textbookmarks (TbTxID);
 
 CREATE TABLE IF NOT EXISTS languagedicts (
   LdID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -172,32 +184,37 @@ CREATE TABLE IF NOT EXISTS languagedicts (
   LdIsActive INTEGER NOT NULL DEFAULT 1,
   LdSortOrder INTEGER NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_languagedicts_lgid ON languagedicts (LdLgID);
+CREATE INDEX IF NOT EXISTS idx_languagedicts_usefor ON languagedicts (LdUseFor);
+CREATE INDEX IF NOT EXISTS idx_languagedicts_type ON languagedicts (LdType);
+CREATE INDEX IF NOT EXISTS idx_languagedicts_isactive ON languagedicts (LdIsActive);
 
 -- Migration tracking table
 
 CREATE TABLE IF NOT EXISTS _migrations (
-  migration_name VARCHAR(255) PRIMARY KEY,
-  applied_at BIGINT NOT NULL
+  mg_name VARCHAR(255) PRIMARY KEY,
+  mg_applied_at BIGINT NOT NULL,
+  mg_checksum VARCHAR(64)
 );
 
--- Seed data: statuses
+-- Seed data: statuses (idempotent)
 
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (0, 'Unknown', '?');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (1, 'New (1)', '1');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (2, 'New (2)', '2');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (3, 'Learning (3)', '3');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (4, 'Learning (4)', '4');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (5, 'Learned', '5');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (99, 'Well Known', 'WKn');
-INSERT INTO statuses (StID, StText, StAbbreviation) VALUES (98, 'Ignored', 'Ign');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (0, 'Unknown', '?');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (1, 'New (1)', '1');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (2, 'New (2)', '2');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (3, 'Learning (3)', '3');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (4, 'Learning (4)', '4');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (5, 'Learned', '5');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (99, 'Well Known', 'WKn');
+INSERT OR IGNORE INTO statuses (StID, StText, StAbbreviation) VALUES (98, 'Ignored', 'Ign');
 
--- Seed data: default settings
+-- Seed data: default settings (idempotent)
 
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('IsDemoData', 'bool', '0');
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('LastBackupDatetime', 'str', NULL);
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('BackupCount', 'int', '5');
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('BackupDir', 'str', NULL);
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('BackupAuto', 'bool', '1');
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('BackupWarn', 'bool', '1');
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('MecabPath', 'str', NULL);
-INSERT INTO settings (StKey, StKeyType, StValue) VALUES ('UserThemeCSS', 'str', NULL);
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('IsDemoData', 'bool', '0');
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('LastBackupDatetime', 'str', NULL);
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('BackupCount', 'int', '5');
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('BackupDir', 'str', NULL);
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('BackupAuto', 'bool', '1');
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('BackupWarn', 'bool', '1');
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('MecabPath', 'str', NULL);
+INSERT OR IGNORE INTO settings (StKey, StKeyType, StValue) VALUES ('UserThemeCSS', 'str', NULL);

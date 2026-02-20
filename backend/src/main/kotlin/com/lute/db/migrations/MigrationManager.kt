@@ -1,12 +1,16 @@
 package com.lute.db.migrations
 
 import com.lute.db.tables.MigrationsTable
+import java.security.MessageDigest
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
+
+class MigrationException(val migrationName: String, cause: Throwable? = null) :
+    Exception("Migration '$migrationName' failed", cause)
 
 class MigrationManager(private val db: Database) {
   private val logger = LoggerFactory.getLogger(MigrationManager::class.java)
@@ -39,18 +43,29 @@ class MigrationManager(private val db: Database) {
   }
 
   fun getAppliedMigrations(): Set<String> =
-      transaction(db) {
-        MigrationsTable.selectAll().map { it[MigrationsTable.migrationName] }.toSet()
-      }
+      transaction(db) { MigrationsTable.selectAll().map { it[MigrationsTable.MgName] }.toSet() }
 
   fun applyMigration(name: String, sql: String) {
-    transaction(db) {
-      execStatements(sql)
-      MigrationsTable.insert {
-        it[migrationName] = name
-        it[appliedAt] = System.currentTimeMillis()
+    val checksum = computeChecksum(sql)
+    try {
+      transaction(db) {
+        execStatements(sql)
+        MigrationsTable.insert {
+          it[MgName] = name
+          it[MgAppliedAt] = System.currentTimeMillis()
+          it[MgChecksum] = checksum
+        }
       }
+    } catch (e: Exception) {
+      logger.error("Migration '{}' failed", name, e)
+      throw MigrationException(name, e)
     }
+  }
+
+  private fun computeChecksum(sql: String): String {
+    val md = MessageDigest.getInstance("SHA-256")
+    val digest = md.digest(sql.toByteArray())
+    return digest.joinToString("") { "%02x".format(it) }
   }
 
   private fun org.jetbrains.exposed.sql.Transaction.execStatements(sql: String) {
@@ -90,17 +105,20 @@ class MigrationManager(private val db: Database) {
     val classLoader = Thread.currentThread().contextClassLoader
     val dirUrl = classLoader.getResource(path) ?: return emptyList()
 
-    return dirUrl
-        .openStream()
-        .bufferedReader()
-        .readLines()
-        .filter { it.endsWith(".sql") }
-        .sorted()
-        .map { fileName ->
-          val sql =
-              classLoader.getResourceAsStream("$path/$fileName")?.bufferedReader()?.readText()
-                  ?: throw IllegalStateException("Migration file not found: $path/$fileName")
-          fileName.removeSuffix(".sql") to sql
-        }
+    return dirUrl.openStream().use { stream ->
+      stream.bufferedReader().use { reader ->
+        reader
+            .readLines()
+            .filter { it.endsWith(".sql") }
+            .sorted()
+            .map { fileName ->
+              val sql =
+                  classLoader.getResourceAsStream("$path/$fileName")?.bufferedReader()?.use {
+                    it.readText()
+                  } ?: throw IllegalStateException("Migration file not found: $path/$fileName")
+              fileName.removeSuffix(".sql") to sql
+            }
+      }
+    }
   }
 }
