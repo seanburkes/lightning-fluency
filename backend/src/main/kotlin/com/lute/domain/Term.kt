@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Term(
-    val id: Int = 0,
-    val languageId: Int,
+    val id: Long = 0,
+    val languageId: Long,
     val text: String,
     val textLC: String = "",
     val status: Int = 0,

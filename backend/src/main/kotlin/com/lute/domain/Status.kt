@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Status(
-    val id: Int = 0,
+    val id: Long = 0,
     val text: String,
     val abbreviation: String,
 )

@@ -4,13 +4,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Book(
-    val id: Int = 0,
-    val languageId: Int,
+    val id: Long = 0,
+    val languageId: Long,
     val title: String,
     val sourceURI: String? = null,
     val archived: Boolean = false,
-    val currentTextId: Int = 0,
+    val currentTextId: Long = 0,
     val audioFilename: String? = null,
-    val audioCurrentPos: Float? = null,
+    val audioCurrentPos: Double? = null,
     val audioBookmarks: String? = null,
 )

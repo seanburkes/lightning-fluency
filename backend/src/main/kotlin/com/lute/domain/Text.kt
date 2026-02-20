@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Text(
-    val id: Int = 0,
-    val bookId: Int,
+    val id: Long = 0,
+    val bookId: Long,
     val order: Int,
     val text: String,
     @Contextual val readDate: LocalDateTime? = null,

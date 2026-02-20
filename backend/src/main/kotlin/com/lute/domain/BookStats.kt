@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BookStats(
-    val bookId: Int,
+    val bookId: Long,
     val distinctTerms: Int? = null,
     val distinctUnknowns: Int? = null,
     val unknownPercent: Int? = null,
