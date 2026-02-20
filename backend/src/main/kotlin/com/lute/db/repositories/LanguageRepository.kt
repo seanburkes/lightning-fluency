@@ -16,7 +16,9 @@ class LanguageRepository {
     LanguagesTable.selectAll().where { LanguagesTable.LgName eq name }.singleOrNull()?.toLanguage()
   }
 
-  fun findAll(): List<Language> = transaction { LanguagesTable.selectAll().map { it.toLanguage() } }
+  fun findAll(limit: Int = Int.MAX_VALUE, offset: Int = 0): List<Language> = transaction {
+    LanguagesTable.selectAll().limit(limit).offset(offset.toLong()).map { it.toLanguage() }
+  }
 
   fun save(language: Language): Long = transaction {
     LanguagesTable.insert {

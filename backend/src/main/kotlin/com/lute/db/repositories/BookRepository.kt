@@ -12,7 +12,12 @@ class BookRepository {
     BooksTable.selectAll().where { BooksTable.BkID eq id }.singleOrNull()?.toBook()
   }
 
-  fun findAll(languageId: Long? = null, archived: Boolean? = null): List<Book> = transaction {
+  fun findAll(
+      languageId: Long? = null,
+      archived: Boolean? = null,
+      limit: Int = Int.MAX_VALUE,
+      offset: Int = 0,
+  ): List<Book> = transaction {
     BooksTable.selectAll()
         .apply {
           val conditions = mutableListOf<Op<Boolean>>()
@@ -22,6 +27,8 @@ class BookRepository {
             where { conditions.reduce { acc, op -> acc and op } }
           }
         }
+        .limit(limit)
+        .offset(offset.toLong())
         .map { it.toBook() }
   }
 
