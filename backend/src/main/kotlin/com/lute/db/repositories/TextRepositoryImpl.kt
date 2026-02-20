@@ -7,30 +7,30 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class TextRepository {
-  fun findById(id: Long): Text? = transaction {
+class TextRepositoryImpl : TextRepository {
+  override fun findById(id: Long): Text? = transaction {
     TextsTable.selectAll().where { TextsTable.TxID eq id }.singleOrNull()?.toText()
   }
 
-  fun findByBookId(bookId: Long): List<Text> = transaction {
+  override fun findByBookId(bookId: Long): List<Text> = transaction {
     TextsTable.selectAll()
         .where { TextsTable.TxBkID eq bookId }
         .orderBy(TextsTable.TxOrder)
         .map { it.toText() }
   }
 
-  fun findByBookAndOrder(bookId: Long, order: Int): Text? = transaction {
+  override fun findByBookAndOrder(bookId: Long, order: Int): Text? = transaction {
     TextsTable.selectAll()
         .where { (TextsTable.TxBkID eq bookId) and (TextsTable.TxOrder eq order) }
         .singleOrNull()
         ?.toText()
   }
 
-  fun getCountForBook(bookId: Long): Int = transaction {
+  override fun getCountForBook(bookId: Long): Int = transaction {
     TextsTable.selectAll().where { TextsTable.TxBkID eq bookId }.count().toInt()
   }
 
-  fun save(text: Text): Long = transaction {
+  override fun save(text: Text): Long = transaction {
     TextsTable.insert {
           it[TxBkID] = text.bookId
           it[TxOrder] = text.order
@@ -41,7 +41,7 @@ class TextRepository {
         }[TextsTable.TxID]
   }
 
-  fun update(text: Text): Unit = transaction {
+  override fun update(text: Text): Unit = transaction {
     TextsTable.update({ TextsTable.TxID eq text.id }) {
       it[TxBkID] = text.bookId
       it[TxOrder] = text.order
@@ -52,5 +52,18 @@ class TextRepository {
     }
   }
 
-  fun delete(id: Long): Unit = transaction { TextsTable.deleteWhere { TxID eq id } }
+  override fun delete(id: Long): Unit = transaction { TextsTable.deleteWhere { TxID eq id } }
+
+  override fun saveAll(texts: List<Text>): List<Long> = transaction {
+    texts.map { text ->
+      TextsTable.insert {
+            it[TxBkID] = text.bookId
+            it[TxOrder] = text.order
+            it[TxText] = text.text
+            it[TxReadDate] = text.readDate
+            it[TxWordCount] = text.wordCount
+            it[TxStartDate] = text.startDate
+          }[TextsTable.TxID]
+    }
+  }
 }

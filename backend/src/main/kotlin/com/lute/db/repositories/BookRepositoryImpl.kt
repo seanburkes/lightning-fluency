@@ -5,18 +5,19 @@ import com.lute.db.tables.BooksTable
 import com.lute.domain.Book
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class BookRepository {
-  fun findById(id: Long): Book? = transaction {
+class BookRepositoryImpl : BookRepository {
+  override fun findById(id: Long): Book? = transaction {
     BooksTable.selectAll().where { BooksTable.BkID eq id }.singleOrNull()?.toBook()
   }
 
-  fun findAll(
-      languageId: Long? = null,
-      archived: Boolean? = null,
-      limit: Int = Int.MAX_VALUE,
-      offset: Int = 0,
+  override fun findAll(
+      languageId: Long?,
+      archived: Boolean?,
+      limit: Int,
+      offset: Int,
   ): List<Book> = transaction {
     BooksTable.selectAll()
         .apply {
@@ -32,7 +33,7 @@ class BookRepository {
         .map { it.toBook() }
   }
 
-  fun save(book: Book): Long = transaction {
+  override fun save(book: Book): Long = transaction {
     BooksTable.insert {
           it[BkLgID] = book.languageId
           it[BkTitle] = book.title
@@ -45,7 +46,7 @@ class BookRepository {
         }[BooksTable.BkID]
   }
 
-  fun update(book: Book): Unit = transaction {
+  override fun update(book: Book): Unit = transaction {
     BooksTable.update({ BooksTable.BkID eq book.id }) {
       it[BkLgID] = book.languageId
       it[BkTitle] = book.title
@@ -58,9 +59,28 @@ class BookRepository {
     }
   }
 
-  fun updateCurrentPage(bookId: Long, txId: Long): Unit = transaction {
+  override fun updateCurrentPage(bookId: Long, txId: Long): Unit = transaction {
     BooksTable.update({ BooksTable.BkID eq bookId }) { it[BkCurrentTxID] = txId }
   }
 
-  fun delete(id: Long): Unit = transaction { BooksTable.deleteWhere { BkID eq id } }
+  override fun delete(id: Long): Unit = transaction { BooksTable.deleteWhere { BkID eq id } }
+
+  override fun saveAll(books: List<Book>): List<Long> = transaction {
+    books.map { book ->
+      BooksTable.insert {
+            it[BkLgID] = book.languageId
+            it[BkTitle] = book.title
+            it[BkSourceURI] = book.sourceURI
+            it[BkArchived] = if (book.archived) 1 else 0
+            it[BkCurrentTxID] = book.currentTextId
+            it[BkAudioFilename] = book.audioFilename
+            it[BkAudioCurrentPos] = book.audioCurrentPos
+            it[BkAudioBookmarks] = book.audioBookmarks
+          }[BooksTable.BkID]
+    }
+  }
+
+  override fun deleteAll(ids: List<Long>): Unit = transaction {
+    BooksTable.deleteWhere { BkID inList ids }
+  }
 }

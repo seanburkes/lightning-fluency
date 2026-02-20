@@ -12,10 +12,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class BookStatsRepositoryTest : DatabaseTestBase() {
-  private val langRepo = LanguageRepository()
-  private val bookRepo = BookRepository()
-  private val termRepo = TermRepository()
-  private val repo = BookStatsRepository()
+  private val langRepo = LanguageRepositoryImpl()
+  private val bookRepo = BookRepositoryImpl()
+  private val termRepo = TermRepositoryImpl()
+  private val repo = BookStatsRepositoryImpl()
   private var langId: Long = 0
   private var bookId: Long = 0
 

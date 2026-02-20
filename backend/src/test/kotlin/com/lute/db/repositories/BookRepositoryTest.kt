@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class BookRepositoryTest : DatabaseTestBase() {
-  private val langRepo = LanguageRepository()
-  private val repo = BookRepository()
+  private val langRepo = LanguageRepositoryImpl()
+  private val repo = BookRepositoryImpl()
   private var langId: Long = 0
 
   @BeforeEach

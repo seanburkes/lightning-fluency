@@ -12,9 +12,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class TagRepositoryTest : DatabaseTestBase() {
-  private val langRepo = LanguageRepository()
-  private val termRepo = TermRepository()
-  private val repo = TagRepository()
+  private val langRepo = LanguageRepositoryImpl()
+  private val termRepo = TermRepositoryImpl()
+  private val repo = TagRepositoryImpl()
   private var langId: Long = 0
 
   @BeforeEach

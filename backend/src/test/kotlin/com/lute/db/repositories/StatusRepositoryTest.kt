@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class StatusRepositoryTest : DatabaseTestBase() {
-  private val repo = StatusRepository()
+  private val repo = StatusRepositoryImpl()
 
   @Test
   fun `save returns generated id`() {

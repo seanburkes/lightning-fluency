@@ -7,20 +7,20 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class LanguageRepository {
-  fun findById(id: Long): Language? = transaction {
+class LanguageRepositoryImpl : LanguageRepository {
+  override fun findById(id: Long): Language? = transaction {
     LanguagesTable.selectAll().where { LanguagesTable.LgID eq id }.singleOrNull()?.toLanguage()
   }
 
-  fun findByName(name: String): Language? = transaction {
+  override fun findByName(name: String): Language? = transaction {
     LanguagesTable.selectAll().where { LanguagesTable.LgName eq name }.singleOrNull()?.toLanguage()
   }
 
-  fun findAll(limit: Int = Int.MAX_VALUE, offset: Int = 0): List<Language> = transaction {
+  override fun findAll(limit: Int, offset: Int): List<Language> = transaction {
     LanguagesTable.selectAll().limit(limit).offset(offset.toLong()).map { it.toLanguage() }
   }
 
-  fun save(language: Language): Long = transaction {
+  override fun save(language: Language): Long = transaction {
     LanguagesTable.insert {
           it[LgName] = language.name
           it[LgCharacterSubstitutions] = language.characterSubstitutions
@@ -33,7 +33,7 @@ class LanguageRepository {
         }[LanguagesTable.LgID]
   }
 
-  fun update(language: Language): Unit = transaction {
+  override fun update(language: Language): Unit = transaction {
     LanguagesTable.update({ LanguagesTable.LgID eq language.id }) {
       it[LgName] = language.name
       it[LgCharacterSubstitutions] = language.characterSubstitutions
@@ -46,5 +46,5 @@ class LanguageRepository {
     }
   }
 
-  fun delete(id: Long): Unit = transaction { LanguagesTable.deleteWhere { LgID eq id } }
+  override fun delete(id: Long): Unit = transaction { LanguagesTable.deleteWhere { LgID eq id } }
 }

@@ -8,15 +8,15 @@ import com.lute.domain.BookStats
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class BookStatsRepository {
-  fun findByBookId(bookId: Long): BookStats? = transaction {
+class BookStatsRepositoryImpl : BookStatsRepository {
+  override fun findByBookId(bookId: Long): BookStats? = transaction {
     BookStatsTable.selectAll()
         .where { BookStatsTable.BsBkID eq bookId }
         .singleOrNull()
         ?.toBookStats()
   }
 
-  fun update(bookStats: BookStats): Unit = transaction {
+  override fun update(bookStats: BookStats): Unit = transaction {
     BookStatsTable.upsert {
       it[BsBkID] = bookStats.bookId
       it[BsDistinctTerms] = bookStats.distinctTerms
@@ -26,7 +26,7 @@ class BookStatsRepository {
     }
   }
 
-  fun calculateAndSave(bookId: Long): Unit = transaction {
+  override fun calculateAndSave(bookId: Long): Unit = transaction {
     val langId =
         BooksTable.selectAll()
             .where { BooksTable.BkID eq bookId }

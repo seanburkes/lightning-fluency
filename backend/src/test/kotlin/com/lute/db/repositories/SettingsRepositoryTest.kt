@@ -6,7 +6,7 @@ import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
 
 class SettingsRepositoryTest : DatabaseTestBase() {
-  private val repo = SettingsRepository()
+  private val repo = SettingsRepositoryImpl()
 
   @Test
   fun `set and get roundtrip`() {

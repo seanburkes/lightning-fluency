@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class TermRepositoryTest : DatabaseTestBase() {
-  private val langRepo = LanguageRepository()
-  private val repo = TermRepository()
+  private val langRepo = LanguageRepositoryImpl()
+  private val repo = TermRepositoryImpl()
   private var langId: Long = 0
 
   @BeforeEach
