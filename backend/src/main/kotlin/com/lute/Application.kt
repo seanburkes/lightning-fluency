@@ -1,6 +1,7 @@
 package com.lute
 
 import com.lute.db.DatabaseFactory
+import com.lute.db.migrations.MigrationException
 import com.lute.db.migrations.MigrationManager
 import com.lute.di.ServiceLocator
 import com.lute.domain.ErrorResponse
@@ -14,17 +15,34 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("Application")
 
 fun Application.module() {
-  val db = DatabaseFactory.database ?: DatabaseFactory.init()
-  MigrationManager(db).runMigrations()
+  environment.monitor.subscribe(ApplicationStopped) {
+    logger.info("Shutting down database connections")
+    DatabaseFactory.shutdown()
+  }
+
+  try {
+    val db = DatabaseFactory.database ?: DatabaseFactory.init()
+    logger.info("Database initialized successfully")
+    MigrationManager(db).runMigrations()
+    logger.info("Migrations completed successfully")
+  } catch (e: MigrationException) {
+    logger.error("Migration failed: ${e.migrationName}", e)
+    throw e
+  } catch (e: Exception) {
+    logger.error("Failed to initialize database", e)
+    throw e
+  }
 
   install(ContentNegotiation) { json(Json { prettyPrint = true }) }
 
   install(StatusPages) {
     exception<Throwable> { call, cause ->
-      println("Unhandled exception: ${cause.message}")
-      cause.printStackTrace()
+      logger.error("Unhandled exception", cause)
       call.respond(
           HttpStatusCode.InternalServerError,
           ErrorResponse(error = "Internal server error"),
