@@ -11,7 +11,7 @@ Lightning Fluency is a language learning application designed to explore evidenc
 - Java 21 (OpenJDK)
 - Node.js 24+
 - npm 11+
-- (Optional) Docker and Docker Compose
+- (Optional) Docker or Podman (rootless supported)
 
 ### Getting Started
 
@@ -45,7 +45,11 @@ npm run check          # TypeScript type checking
 | `npm run format` | frontend/ | Format with Prettier |
 | `npm run lint` | frontend/ | Lint with ESLint |
 
-### Docker
+### Container Runtime (Docker or Podman)
+
+This project supports both **Docker** and **Podman** (rootless mode preferred for security).
+
+#### Using Docker
 
 ```bash
 # Start full stack
@@ -58,8 +62,33 @@ docker-compose up backend
 docker-compose up --build
 ```
 
+#### Using Podman (Rootless - Recommended)
+
+```bash
+# Start full stack (no root required!)
+podman-compose up
+
+# Backend only
+podman-compose up backend
+
+# Rebuild after changes
+podman-compose up --build
+```
+
+**Why Podman?**
+- **Daemonless**: No persistent background process
+- **Rootless**: Run containers without root privileges (better security)
+- **Docker-compatible**: Drop-in replacement, same commands
+- **User namespaces**: Better isolation between containers and host
+
+**Requirements for Podman:**
+- Podman 4.0+
+- podman-compose (`pip install podman-compose` or via package manager)
+
+#### Endpoints
+
 - Backend: http://localhost:8080
-- Frontend: http://localhost:5173 (dev) or http://localhost:3000 (Docker)
+- Frontend: http://localhost:5173 (dev) or http://localhost:3000 (container)
 - Health check: http://localhost:8080/api/health
 
 ### Code Quality
