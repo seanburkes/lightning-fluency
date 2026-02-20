@@ -80,10 +80,10 @@ object Mappers {
 
   fun ResultRow.toBookStats() =
       BookStats(
-          bookId = this[BookStatsTable.BkID],
-          distinctTerms = this[BookStatsTable.distinctterms],
-          distinctUnknowns = this[BookStatsTable.distinctunknowns],
-          unknownPercent = this[BookStatsTable.unknownpercent],
-          statusDistribution = this[BookStatsTable.status_distribution],
+          bookId = this[BookStatsTable.BsBkID],
+          distinctTerms = this[BookStatsTable.BsDistinctTerms],
+          distinctUnknowns = this[BookStatsTable.BsDistinctUnknowns],
+          unknownPercent = this[BookStatsTable.BsUnknownPercent],
+          statusDistribution = this[BookStatsTable.BsStatusDistribution],
       )
 }

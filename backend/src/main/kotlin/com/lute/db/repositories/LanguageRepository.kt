@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class LanguageRepository {
-  fun findById(id: Int): Language? = transaction {
+  fun findById(id: Long): Language? = transaction {
     LanguagesTable.selectAll().where { LanguagesTable.LgID eq id }.singleOrNull()?.toLanguage()
   }
 
@@ -18,7 +18,7 @@ class LanguageRepository {
 
   fun findAll(): List<Language> = transaction { LanguagesTable.selectAll().map { it.toLanguage() } }
 
-  fun save(language: Language): Int = transaction {
+  fun save(language: Language): Long = transaction {
     LanguagesTable.insert {
           it[LgName] = language.name
           it[LgCharacterSubstitutions] = language.characterSubstitutions
@@ -44,5 +44,5 @@ class LanguageRepository {
     }
   }
 
-  fun delete(id: Int): Unit = transaction { LanguagesTable.deleteWhere { LgID eq id } }
+  fun delete(id: Long): Unit = transaction { LanguagesTable.deleteWhere { LgID eq id } }
 }

@@ -9,31 +9,24 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BookStatsRepository {
-  fun findByBookId(bookId: Int): BookStats? = transaction {
-    BookStatsTable.selectAll().where { BookStatsTable.BkID eq bookId }.singleOrNull()?.toBookStats()
+  fun findByBookId(bookId: Long): BookStats? = transaction {
+    BookStatsTable.selectAll()
+        .where { BookStatsTable.BsBkID eq bookId }
+        .singleOrNull()
+        ?.toBookStats()
   }
 
   fun update(bookStats: BookStats): Unit = transaction {
-    val exists = BookStatsTable.selectAll().where { BookStatsTable.BkID eq bookStats.bookId }.any()
-    if (exists) {
-      BookStatsTable.update({ BookStatsTable.BkID eq bookStats.bookId }) {
-        it[distinctterms] = bookStats.distinctTerms
-        it[distinctunknowns] = bookStats.distinctUnknowns
-        it[unknownpercent] = bookStats.unknownPercent
-        it[status_distribution] = bookStats.statusDistribution
-      }
-    } else {
-      BookStatsTable.insert {
-        it[BkID] = bookStats.bookId
-        it[distinctterms] = bookStats.distinctTerms
-        it[distinctunknowns] = bookStats.distinctUnknowns
-        it[unknownpercent] = bookStats.unknownPercent
-        it[status_distribution] = bookStats.statusDistribution
-      }
+    BookStatsTable.upsert {
+      it[BsBkID] = bookStats.bookId
+      it[BsDistinctTerms] = bookStats.distinctTerms
+      it[BsDistinctUnknowns] = bookStats.distinctUnknowns
+      it[BsUnknownPercent] = bookStats.unknownPercent
+      it[BsStatusDistribution] = bookStats.statusDistribution
     }
   }
 
-  fun calculateAndSave(bookId: Int): Unit = transaction {
+  fun calculateAndSave(bookId: Long): Unit = transaction {
     val langId =
         BooksTable.selectAll()
             .where { BooksTable.BkID eq bookId }

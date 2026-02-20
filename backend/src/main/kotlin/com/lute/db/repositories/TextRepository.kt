@@ -8,29 +8,29 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class TextRepository {
-  fun findById(id: Int): Text? = transaction {
+  fun findById(id: Long): Text? = transaction {
     TextsTable.selectAll().where { TextsTable.TxID eq id }.singleOrNull()?.toText()
   }
 
-  fun findByBookId(bookId: Int): List<Text> = transaction {
+  fun findByBookId(bookId: Long): List<Text> = transaction {
     TextsTable.selectAll()
         .where { TextsTable.TxBkID eq bookId }
         .orderBy(TextsTable.TxOrder)
         .map { it.toText() }
   }
 
-  fun findByBookAndOrder(bookId: Int, order: Int): Text? = transaction {
+  fun findByBookAndOrder(bookId: Long, order: Int): Text? = transaction {
     TextsTable.selectAll()
         .where { (TextsTable.TxBkID eq bookId) and (TextsTable.TxOrder eq order) }
         .singleOrNull()
         ?.toText()
   }
 
-  fun getCountForBook(bookId: Int): Int = transaction {
+  fun getCountForBook(bookId: Long): Int = transaction {
     TextsTable.selectAll().where { TextsTable.TxBkID eq bookId }.count().toInt()
   }
 
-  fun save(text: Text): Int = transaction {
+  fun save(text: Text): Long = transaction {
     TextsTable.insert {
           it[TxBkID] = text.bookId
           it[TxOrder] = text.order
@@ -52,5 +52,5 @@ class TextRepository {
     }
   }
 
-  fun delete(id: Int): Unit = transaction { TextsTable.deleteWhere { TxID eq id } }
+  fun delete(id: Long): Unit = transaction { TextsTable.deleteWhere { TxID eq id } }
 }

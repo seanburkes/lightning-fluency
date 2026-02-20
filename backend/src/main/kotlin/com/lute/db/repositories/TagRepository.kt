@@ -15,25 +15,25 @@ class TagRepository {
     TagsTable.selectAll().where { TagsTable.TgText eq text }.singleOrNull()?.toTag()
   }
 
-  fun save(tag: Tag): Int = transaction {
+  fun save(tag: Tag): Long = transaction {
     TagsTable.insert {
           it[TgText] = tag.text
           it[TgComment] = tag.comment
         }[TagsTable.TgID]
   }
 
-  fun addTagToTerm(termId: Int, tagId: Int): Unit = transaction {
+  fun addTagToTerm(termId: Long, tagId: Long): Unit = transaction {
     WordTagsTable.insert {
       it[WtWoID] = termId
       it[WtTgID] = tagId
     }
   }
 
-  fun removeTagFromTerm(termId: Int, tagId: Int): Unit = transaction {
+  fun removeTagFromTerm(termId: Long, tagId: Long): Unit = transaction {
     WordTagsTable.deleteWhere { (WtWoID eq termId) and (WtTgID eq tagId) }
   }
 
-  fun getTagsForTerm(termId: Int): List<Tag> = transaction {
+  fun getTagsForTerm(termId: Long): List<Tag> = transaction {
     TagsTable.innerJoin(WordTagsTable, { TgID }, { WtTgID })
         .selectAll()
         .where { WordTagsTable.WtWoID eq termId }

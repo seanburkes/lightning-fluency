@@ -8,11 +8,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BookRepository {
-  fun findById(id: Int): Book? = transaction {
+  fun findById(id: Long): Book? = transaction {
     BooksTable.selectAll().where { BooksTable.BkID eq id }.singleOrNull()?.toBook()
   }
 
-  fun findAll(languageId: Int? = null, archived: Boolean? = null): List<Book> = transaction {
+  fun findAll(languageId: Long? = null, archived: Boolean? = null): List<Book> = transaction {
     BooksTable.selectAll()
         .apply {
           val conditions = mutableListOf<Op<Boolean>>()
@@ -25,7 +25,7 @@ class BookRepository {
         .map { it.toBook() }
   }
 
-  fun save(book: Book): Int = transaction {
+  fun save(book: Book): Long = transaction {
     BooksTable.insert {
           it[BkLgID] = book.languageId
           it[BkTitle] = book.title
@@ -51,9 +51,9 @@ class BookRepository {
     }
   }
 
-  fun updateCurrentPage(bookId: Int, txId: Int): Unit = transaction {
+  fun updateCurrentPage(bookId: Long, txId: Long): Unit = transaction {
     BooksTable.update({ BooksTable.BkID eq bookId }) { it[BkCurrentTxID] = txId }
   }
 
-  fun delete(id: Int): Unit = transaction { BooksTable.deleteWhere { BkID eq id } }
+  fun delete(id: Long): Unit = transaction { BooksTable.deleteWhere { BkID eq id } }
 }

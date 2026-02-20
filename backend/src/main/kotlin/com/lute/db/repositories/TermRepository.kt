@@ -8,11 +8,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class TermRepository {
-  fun findById(id: Int): Term? = transaction {
+  fun findById(id: Long): Term? = transaction {
     WordsTable.selectAll().where { WordsTable.WoID eq id }.singleOrNull()?.toTerm()
   }
 
-  fun findByTextAndLanguage(textLC: String, languageId: Int): Term? = transaction {
+  fun findByTextAndLanguage(textLC: String, languageId: Long): Term? = transaction {
     WordsTable.selectAll()
         .where { (WordsTable.WoTextLC eq textLC) and (WordsTable.WoLgID eq languageId) }
         .singleOrNull()
@@ -20,7 +20,7 @@ class TermRepository {
   }
 
   fun findAll(
-      languageId: Int? = null,
+      languageId: Long? = null,
       status: Int? = null,
       limit: Int = Int.MAX_VALUE,
       offset: Int = 0,
@@ -39,7 +39,7 @@ class TermRepository {
         .map { it.toTerm() }
   }
 
-  fun save(term: Term): Int = transaction {
+  fun save(term: Term): Long = transaction {
     val effectiveTextLC = term.textLC.ifEmpty { term.text.lowercase() }
     WordsTable.insert {
           it[WoLgID] = term.languageId
@@ -66,9 +66,9 @@ class TermRepository {
     }
   }
 
-  fun delete(id: Int): Unit = transaction { WordsTable.deleteWhere { WoID eq id } }
+  fun delete(id: Long): Unit = transaction { WordsTable.deleteWhere { WoID eq id } }
 
-  fun countByLanguage(languageId: Int): Int = transaction {
+  fun countByLanguage(languageId: Long): Int = transaction {
     WordsTable.selectAll().where { WordsTable.WoLgID eq languageId }.count().toInt()
   }
 }
