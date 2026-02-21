@@ -1,10 +1,16 @@
 package com.lute
 
+import com.lute.application.exceptions.DuplicateLanguageException
+import com.lute.application.exceptions.LanguageInUseException
+import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.ValidationException
 import com.lute.db.DatabaseFactory
 import com.lute.db.migrations.MigrationException
 import com.lute.db.migrations.MigrationManager
 import com.lute.di.ServiceLocator
 import com.lute.domain.ErrorResponse
+import com.lute.dtos.ValidationError
+import com.lute.dtos.ValidationErrorResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -41,6 +47,26 @@ fun Application.module() {
   install(ContentNegotiation) { json(Json { prettyPrint = true }) }
 
   install(StatusPages) {
+    exception<LanguageNotFoundException> { call, cause ->
+      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Language not found"))
+    }
+
+    exception<LanguageInUseException> { call, cause ->
+      call.respond(HttpStatusCode.Conflict, ErrorResponse(cause.message ?: "Language is in use"))
+    }
+
+    exception<DuplicateLanguageException> { call, cause ->
+      call.respond(
+          HttpStatusCode.Conflict,
+          ErrorResponse(cause.message ?: "Language with this name already exists"),
+      )
+    }
+
+    exception<ValidationException> { call, cause ->
+      val errors = cause.errors.map { (field, message) -> ValidationError(field, message) }
+      call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(errors))
+    }
+
     exception<Throwable> { call, cause ->
       logger.error("Unhandled exception", cause)
       call.respond(
@@ -53,6 +79,9 @@ fun Application.module() {
   routing {
     val healthRoute = ServiceLocator.healthRoute
     healthRoute.register(this)
+
+    val languageRoutes = ServiceLocator.languageRoutes
+    languageRoutes.register(this)
   }
 }
 
