@@ -2,6 +2,7 @@ package com.lute.db.repositories
 
 import com.lute.domain.Book
 import com.lute.domain.BookStats
+import com.lute.domain.Dictionary
 import com.lute.domain.Language
 import com.lute.domain.Setting
 import com.lute.domain.Status
@@ -21,6 +22,12 @@ interface LanguageRepository {
   fun update(language: Language)
 
   fun delete(id: Long)
+
+  fun countBooksForLanguage(id: Long): Long
+
+  fun countTermsForLanguage(id: Long): Long
+
+  fun countDictionariesForLanguage(id: Long): Long
 }
 
 interface BookRepository {
@@ -125,4 +132,18 @@ interface BookStatsRepository {
   fun update(bookStats: BookStats)
 
   fun calculateAndSave(bookId: Long)
+}
+
+interface DictionaryRepository {
+  fun findById(id: Long): Dictionary?
+
+  fun findByIdAndLanguageId(id: Long, languageId: Long): Dictionary?
+
+  fun findByLanguageId(languageId: Long): List<Dictionary>
+
+  fun save(dictionary: Dictionary): Long
+
+  fun update(dictionary: Dictionary)
+
+  fun delete(id: Long)
 }

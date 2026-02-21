@@ -1,7 +1,10 @@
 package com.lute.db.repositories
 
 import com.lute.db.Mappers.toLanguage
+import com.lute.db.tables.BooksTable
+import com.lute.db.tables.LanguageDictsTable
 import com.lute.db.tables.LanguagesTable
+import com.lute.db.tables.WordsTable
 import com.lute.domain.Language
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -47,4 +50,16 @@ class LanguageRepositoryImpl : LanguageRepository {
   }
 
   override fun delete(id: Long): Unit = transaction { LanguagesTable.deleteWhere { LgID eq id } }
+
+  override fun countBooksForLanguage(id: Long): Long = transaction {
+    BooksTable.selectAll().where { BooksTable.BkLgID eq id }.count()
+  }
+
+  override fun countTermsForLanguage(id: Long): Long = transaction {
+    WordsTable.selectAll().where { WordsTable.WoLgID eq id }.count()
+  }
+
+  override fun countDictionariesForLanguage(id: Long): Long = transaction {
+    LanguageDictsTable.selectAll().where { LanguageDictsTable.LdLgID eq id }.count()
+  }
 }

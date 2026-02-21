@@ -5,6 +5,17 @@ import com.lute.domain.*
 import org.jetbrains.exposed.sql.ResultRow
 
 object Mappers {
+  fun ResultRow.toDictionary() =
+      Dictionary(
+          id = this[LanguageDictsTable.LdID],
+          languageId = this[LanguageDictsTable.LdLgID],
+          useFor = this[LanguageDictsTable.LdUseFor],
+          type = this[LanguageDictsTable.LdType],
+          dictUri = this[LanguageDictsTable.LdDictURI],
+          isActive = this[LanguageDictsTable.LdIsActive] != 0,
+          sortOrder = this[LanguageDictsTable.LdSortOrder],
+      )
+
   fun ResultRow.toLanguage() =
       Language(
           id = this[LanguagesTable.LgID],
