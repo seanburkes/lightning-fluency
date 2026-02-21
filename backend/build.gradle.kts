@@ -60,6 +60,7 @@ dependencies {
   testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+  testImplementation("io.mockk:mockk:1.13.16")
 }
 
 tasks.test { useJUnitPlatform() }
