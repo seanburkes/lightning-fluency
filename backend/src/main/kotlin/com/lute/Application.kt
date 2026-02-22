@@ -1,8 +1,10 @@
 package com.lute
 
+import com.lute.application.exceptions.BookNotFoundException
 import com.lute.application.exceptions.DuplicateLanguageException
 import com.lute.application.exceptions.LanguageInUseException
 import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.TagNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.db.DatabaseFactory
 import com.lute.db.migrations.MigrationException
@@ -47,6 +49,14 @@ fun Application.module() {
   install(ContentNegotiation) { json(Json { prettyPrint = true }) }
 
   install(StatusPages) {
+    exception<BookNotFoundException> { call, cause ->
+      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Book not found"))
+    }
+
+    exception<TagNotFoundException> { call, cause ->
+      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Tag not found"))
+    }
+
     exception<LanguageNotFoundException> { call, cause ->
       call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Language not found"))
     }
@@ -82,6 +92,9 @@ fun Application.module() {
 
     val languageRoutes = ServiceLocator.languageRoutes
     languageRoutes.register(this)
+
+    val bookRoutes = ServiceLocator.bookRoutes
+    bookRoutes.register(this)
   }
 }
 

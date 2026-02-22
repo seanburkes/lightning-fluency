@@ -1,5 +1,9 @@
 package com.lute.di
 
+import com.lute.application.BookService
+import com.lute.application.BookServiceImpl
+import com.lute.application.BookStatsService
+import com.lute.application.BookStatsServiceImpl
 import com.lute.application.DictionaryService
 import com.lute.application.DictionaryServiceImpl
 import com.lute.application.HealthService
@@ -29,6 +33,7 @@ import com.lute.db.repositories.TermRepositoryImpl
 import com.lute.db.repositories.TextRepository
 import com.lute.db.repositories.TextRepositoryImpl
 import com.lute.parse.ParserFactory
+import com.lute.presentation.BookRoutes
 import com.lute.presentation.HealthRoute
 import com.lute.presentation.LanguageRoutes
 
@@ -65,6 +70,21 @@ object ServiceLocator {
   val dictionaryService: DictionaryService by lazy {
     DictionaryServiceImpl(dictionaryRepository, languageRepository)
   }
+
+  val bookService: BookService by lazy {
+    BookServiceImpl(
+        bookRepository,
+        textRepository,
+        languageRepository,
+        tagRepository,
+    )
+  }
+
+  val bookStatsService: BookStatsService by lazy {
+    BookStatsServiceImpl(bookRepository, bookStatsRepository)
+  }
+
+  val bookRoutes: BookRoutes by lazy { BookRoutes(bookService) }
 
   // Parser
   val parserFactory: ParserFactory by lazy { ParserFactory() }
