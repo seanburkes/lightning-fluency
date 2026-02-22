@@ -17,6 +17,8 @@ interface LanguageRepository {
 
   fun findAll(limit: Int = Int.MAX_VALUE, offset: Int = 0): List<Language>
 
+  fun findByIds(ids: List<Long>): List<Language>
+
   fun save(language: Language): Long
 
   fun update(language: Language)
@@ -51,6 +53,14 @@ interface BookRepository {
   fun saveAll(books: List<Book>): List<Long>
 
   fun deleteAll(ids: List<Long>)
+
+  fun findByIds(ids: List<Long>): List<Book>
+
+  fun deleteWithRelationships(id: Long)
+
+  fun addTagToBook(bookId: Long, tagId: Long)
+
+  fun removeTagFromBook(bookId: Long, tagId: Long)
 }
 
 interface TextRepository {
@@ -61,6 +71,8 @@ interface TextRepository {
   fun findByBookAndOrder(bookId: Long, order: Int): Text?
 
   fun getCountForBook(bookId: Long): Int
+
+  fun getCountsForBooks(bookIds: List<Long>): Map<Long, Int>
 
   fun save(text: Text): Long
 
@@ -94,10 +106,26 @@ interface TermRepository {
   fun saveAll(terms: List<Term>): List<Long>
 
   fun deleteAll(ids: List<Long>)
+
+  fun findByIds(ids: List<Long>): List<Term>
+
+  fun findByTextContaining(query: String, languageId: Long?, status: Int?): List<Term>
+
+  fun getParentIdsForTerms(termIds: List<Long>): Map<Long, List<Long>>
+
+  fun getChildrenCountForTerms(termIds: List<Long>): Map<Long, Int>
+
+  fun deleteWithRelationships(id: Long)
+
+  fun addParent(termId: Long, parentId: Long)
+
+  fun removeParent(termId: Long, parentId: Long)
 }
 
 interface TagRepository {
   fun findAll(): List<Tag>
+
+  fun findById(id: Long): Tag?
 
   fun findByText(text: String): Tag?
 
@@ -108,6 +136,10 @@ interface TagRepository {
   fun removeTagFromTerm(termId: Long, tagId: Long)
 
   fun getTagsForTerm(termId: Long): List<Tag>
+
+  fun getTagsForTerms(termIds: List<Long>): Map<Long, List<Tag>>
+
+  fun getTagsForBooks(bookIds: List<Long>): Map<Long, List<Tag>>
 }
 
 interface StatusRepository {

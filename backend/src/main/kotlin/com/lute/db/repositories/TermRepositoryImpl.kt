@@ -1,11 +1,14 @@
 package com.lute.db.repositories
 
 import com.lute.db.Mappers.toTerm
+import com.lute.db.tables.WordParentsTable
+import com.lute.db.tables.WordTagsTable
 import com.lute.db.tables.WordsTable
 import com.lute.domain.Term
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class TermRepositoryImpl : TermRepository {
@@ -91,5 +94,84 @@ class TermRepositoryImpl : TermRepository {
 
   override fun deleteAll(ids: List<Long>): Unit = transaction {
     WordsTable.deleteWhere { WoID inList ids }
+  }
+
+  override fun findByIds(ids: List<Long>): List<Term> = transaction {
+    if (ids.isEmpty()) {
+      emptyList()
+    } else {
+      WordsTable.selectAll().where { WordsTable.WoID inList ids }.map { it.toTerm() }
+    }
+  }
+
+  override fun findByTextContaining(
+      query: String,
+      languageId: Long?,
+      status: Int?,
+  ): List<Term> = transaction {
+    val conditions = mutableListOf<Op<Boolean>>()
+    val escapedQuery = query.lowercase().replace("%", "\\%").replace("_", "\\_")
+    conditions.add(WordsTable.WoTextLC like "%$escapedQuery%")
+    languageId?.let { conditions.add(WordsTable.WoLgID eq it) }
+    status?.let { conditions.add(WordsTable.WoStatus eq it) }
+
+    WordsTable.selectAll().where { conditions.reduce { acc, op -> acc and op } }.map { it.toTerm() }
+  }
+
+  override fun getParentIdsForTerms(termIds: List<Long>): Map<Long, List<Long>> = transaction {
+    if (termIds.isEmpty()) {
+      emptyMap()
+    } else {
+      val rows = WordParentsTable.selectAll().where { WordParentsTable.WpWoID inList termIds }
+      val result = mutableMapOf<Long, MutableList<Long>>()
+      for (row in rows) {
+        val termId = row[WordParentsTable.WpWoID]
+        val parentId = row[WordParentsTable.WpParentWoID]
+        result.getOrPut(termId) { mutableListOf() }.add(parentId)
+      }
+      result
+    }
+  }
+
+  override fun getChildrenCountForTerms(termIds: List<Long>): Map<Long, Int> = transaction {
+    if (termIds.isEmpty()) {
+      emptyMap()
+    } else {
+      val rows = WordParentsTable.selectAll().where { WordParentsTable.WpParentWoID inList termIds }
+      val result = mutableMapOf<Long, Int>()
+      for (row in rows) {
+        val parentId = row[WordParentsTable.WpParentWoID]
+        result[parentId] = (result[parentId] ?: 0) + 1
+      }
+      result
+    }
+  }
+
+  override fun deleteWithRelationships(id: Long): Unit = transaction {
+    WordTagsTable.deleteWhere { WordTagsTable.WtWoID eq id }
+    WordParentsTable.deleteWhere { WordParentsTable.WpWoID eq id }
+    WordParentsTable.deleteWhere { WordParentsTable.WpParentWoID eq id }
+    WordsTable.deleteWhere { WordsTable.WoID eq id }
+  }
+
+  override fun addParent(termId: Long, parentId: Long): Unit = transaction {
+    val existing =
+        WordParentsTable.selectAll()
+            .where {
+              (WordParentsTable.WpWoID eq termId) and (WordParentsTable.WpParentWoID eq parentId)
+            }
+            .singleOrNull()
+    if (existing == null) {
+      WordParentsTable.insert {
+        it[WordParentsTable.WpWoID] = termId
+        it[WordParentsTable.WpParentWoID] = parentId
+      }
+    }
+  }
+
+  override fun removeParent(termId: Long, parentId: Long): Unit = transaction {
+    WordParentsTable.deleteWhere {
+      (WordParentsTable.WpWoID eq termId) and (WordParentsTable.WpParentWoID eq parentId)
+    }
   }
 }

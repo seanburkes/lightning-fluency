@@ -1,7 +1,9 @@
 package com.lute.db.repositories
 
 import com.lute.db.Mappers.toBook
+import com.lute.db.tables.BookTagsTable
 import com.lute.db.tables.BooksTable
+import com.lute.db.tables.TextsTable
 import com.lute.domain.Book
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -82,5 +84,38 @@ class BookRepositoryImpl : BookRepository {
 
   override fun deleteAll(ids: List<Long>): Unit = transaction {
     BooksTable.deleteWhere { BkID inList ids }
+  }
+
+  override fun findByIds(ids: List<Long>): List<Book> = transaction {
+    if (ids.isEmpty()) {
+      emptyList()
+    } else {
+      BooksTable.selectAll().where { BooksTable.BkID inList ids }.map { it.toBook() }
+    }
+  }
+
+  override fun deleteWithRelationships(id: Long): Unit = transaction {
+    BookTagsTable.deleteWhere { BookTagsTable.BtBkID eq id }
+    TextsTable.deleteWhere { TextsTable.TxBkID eq id }
+    BooksTable.deleteWhere { BooksTable.BkID eq id }
+  }
+
+  override fun addTagToBook(bookId: Long, tagId: Long): Unit = transaction {
+    val existing =
+        BookTagsTable.selectAll()
+            .where { (BookTagsTable.BtBkID eq bookId) and (BookTagsTable.BtT2ID eq tagId) }
+            .singleOrNull()
+    if (existing == null) {
+      BookTagsTable.insert {
+        it[BookTagsTable.BtBkID] = bookId
+        it[BookTagsTable.BtT2ID] = tagId
+      }
+    }
+  }
+
+  override fun removeTagFromBook(bookId: Long, tagId: Long): Unit = transaction {
+    BookTagsTable.deleteWhere {
+      (BookTagsTable.BtBkID eq bookId) and (BookTagsTable.BtT2ID eq tagId)
+    }
   }
 }

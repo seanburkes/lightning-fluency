@@ -75,6 +75,13 @@ object Mappers {
           comment = this[TagsTable.TgComment],
       )
 
+  fun ResultRow.toBookTag() =
+      Tag(
+          id = this[Tags2Table.T2ID],
+          text = this[Tags2Table.T2Text],
+          comment = this[Tags2Table.T2Comment],
+      )
+
   fun ResultRow.toStatus() =
       Status(
           id = this[StatusesTable.StID],

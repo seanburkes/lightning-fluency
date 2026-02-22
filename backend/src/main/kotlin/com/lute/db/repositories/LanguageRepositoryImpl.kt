@@ -8,6 +8,7 @@ import com.lute.db.tables.WordsTable
 import com.lute.domain.Language
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class LanguageRepositoryImpl : LanguageRepository {
@@ -21,6 +22,14 @@ class LanguageRepositoryImpl : LanguageRepository {
 
   override fun findAll(limit: Int, offset: Int): List<Language> = transaction {
     LanguagesTable.selectAll().limit(limit).offset(offset.toLong()).map { it.toLanguage() }
+  }
+
+  override fun findByIds(ids: List<Long>): List<Language> = transaction {
+    if (ids.isEmpty()) {
+      emptyList()
+    } else {
+      LanguagesTable.selectAll().where { LanguagesTable.LgID inList ids }.map { it.toLanguage() }
+    }
   }
 
   override fun save(language: Language): Long = transaction {

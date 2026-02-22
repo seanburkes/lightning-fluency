@@ -5,6 +5,7 @@ import com.lute.db.tables.TextsTable
 import com.lute.domain.Text
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class TextRepositoryImpl : TextRepository {
@@ -28,6 +29,17 @@ class TextRepositoryImpl : TextRepository {
 
   override fun getCountForBook(bookId: Long): Int = transaction {
     TextsTable.selectAll().where { TextsTable.TxBkID eq bookId }.count().toInt()
+  }
+
+  override fun getCountsForBooks(bookIds: List<Long>): Map<Long, Int> = transaction {
+    if (bookIds.isEmpty()) {
+      emptyMap()
+    } else {
+      TextsTable.selectAll()
+          .where { TextsTable.TxBkID inList bookIds }
+          .groupBy { it[TextsTable.TxBkID] }
+          .mapValues { (_, rows) -> rows.size }
+    }
   }
 
   override fun save(text: Text): Long = transaction {
