@@ -18,3 +18,8 @@ data class CreateTextDto(
     val order: Int,
     val text: String,
 )
+
+@Serializable
+data class SaveCurrentPageDto(
+    val page_num: Int,
+)
