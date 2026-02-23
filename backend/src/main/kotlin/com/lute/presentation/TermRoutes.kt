@@ -1,30 +1,24 @@
 package com.lute.presentation
 
 import com.lute.application.TermService
-import com.lute.domain.ErrorResponse
 import com.lute.dtos.BulkOperationDto
 import com.lute.dtos.CreateTermDto
 import com.lute.dtos.UpdateTermDto
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.ByteArrayContent
-import io.ktor.server.application.*
 import io.ktor.server.request.receive
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 
 class TermRoutes(private val termService: TermService) {
-  private fun ApplicationCall.parseId(param: String): Long? = parameters[param]?.toLongOrNull()
-
-  private fun ApplicationCall.parseInt(param: String): Int? = parameters[param]?.toIntOrNull()
-
   fun register(route: Route) {
     route.route("/api/terms") {
       get {
         val languageId = call.parseId("language_id")
-        val status = call.parseInt("status")
-        val limit = call.parseInt("limit") ?: 100
-        val offset = call.parseInt("offset") ?: 0
+        val status = call.parseIntParam("status")
+        val limit = call.parseIntParam("limit") ?: 100
+        val offset = call.parseIntParam("offset") ?: 0
 
         val search = call.parameters["search"]
         if (search != null) {
@@ -57,7 +51,7 @@ class TermRoutes(private val termService: TermService) {
       route("/export") {
         get {
           val languageId = call.parseId("language_id")
-          val status = call.parseInt("status")
+          val status = call.parseIntParam("status")
           val csv = termService.exportToCsv(languageId, status)
           call.respond(
               ByteArrayContent(
@@ -71,15 +65,7 @@ class TermRoutes(private val termService: TermService) {
 
       route("/import") {
         post {
-          val languageId = call.parseId("language_id")
-          if (languageId == null) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse(error = "language_id is required"),
-            )
-            return@post
-          }
-
+          val languageId = call.parseIdOrBadRequest("language_id", "language") ?: return@post
           val text = call.receiveText()
           val result = termService.importFromCsv(text, languageId)
           call.respond(result)
@@ -88,100 +74,55 @@ class TermRoutes(private val termService: TermService) {
 
       route("/{id}") {
         get {
-          val id = call.parseId("id")
-          if (id == null) {
-            call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Invalid term ID"))
-            return@get
-          }
-
-          val term = termService.getTermById(id)
-          if (term == null) {
-            call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "Term not found"))
-          } else {
-            call.respond(term)
-          }
+          val id = call.parseIdOrBadRequest("id", "term") ?: return@get
+          val term = call.requireEntity(id, "Term", termService::getTermById) ?: return@get
+          call.respond(term)
         }
 
         patch {
-          val id = call.parseId("id")
-          if (id == null) {
-            call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Invalid term ID"))
-            return@patch
-          }
-
+          val id = call.parseIdOrBadRequest("id", "term") ?: return@patch
           val dto = call.receive<UpdateTermDto>()
-          val term = termService.updateTerm(id, dto)
-          if (term == null) {
-            call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "Term not found"))
-          } else {
-            call.respond(term)
-          }
+          val term =
+              call.requireEntity(id, "Term") { termService.updateTerm(it, dto) } ?: return@patch
+          call.respond(term)
         }
 
         delete {
-          val id = call.parseId("id")
-          if (id == null) {
-            call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Invalid term ID"))
-            return@delete
-          }
-
+          val id = call.parseIdOrBadRequest("id", "term") ?: return@delete
           val deleted = termService.deleteTerm(id)
           if (deleted) {
             call.respond(HttpStatusCode.NoContent)
           } else {
-            call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "Term not found"))
+            call.respondNotFound("Term")
           }
         }
 
         route("/parents") {
           get {
-            val id = call.parseId("id")
-            if (id == null) {
-              call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Invalid term ID"))
-              return@get
-            }
-
+            val id = call.parseIdOrBadRequest("id", "term") ?: return@get
             try {
               val parents = termService.getParents(id)
               call.respond(parents)
             } catch (e: Exception) {
-              call.respond(HttpStatusCode.NotFound, ErrorResponse(error = e.message ?: "Error"))
+              call.respondNotFound("Term")
             }
           }
 
           post {
-            val id = call.parseId("id")
-            if (id == null) {
-              call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Invalid term ID"))
-              return@post
-            }
-
-            val parentId = call.parseId("parent_id")
-            if (parentId == null) {
-              call.respond(
-                  HttpStatusCode.BadRequest,
-                  ErrorResponse(error = "parent_id is required"),
-              )
-              return@post
-            }
-
+            val id = call.parseIdOrBadRequest("id", "term") ?: return@post
+            val parentId = call.parseIdOrBadRequest("parent_id", "parent term") ?: return@post
             try {
               termService.addParent(id, parentId)
               call.respond(HttpStatusCode.Created)
             } catch (e: Exception) {
-              call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = e.message ?: "Error"))
+              call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Error")))
             }
           }
 
           route("/{parentId}") {
             delete {
-              val id = call.parseId("id")
-              val parentId = call.parseId("parentId")
-              if (id == null || parentId == null) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Invalid ID"))
-                return@delete
-              }
-
+              val id = call.parseIdOrBadRequest("id", "term") ?: return@delete
+              val parentId = call.parseIdOrBadRequest("parentId", "parent term") ?: return@delete
               termService.removeParent(id, parentId)
               call.respond(HttpStatusCode.NoContent)
             }
