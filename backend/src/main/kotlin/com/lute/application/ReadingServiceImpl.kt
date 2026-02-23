@@ -17,8 +17,6 @@ class ReadingServiceImpl(
     private val languageRepository: LanguageRepository,
     private val parserService: ParserService,
 ) : ReadingService {
-  private val termCache = mutableMapOf<String, Term?>()
-
   override fun getPage(bookId: Long, pageNum: Int): ReadingPageDto? {
     val book = bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
 
@@ -68,11 +66,13 @@ class ReadingServiceImpl(
 
   override fun getPreviousPage(bookId: Long, currentPage: Int): Int? {
     if (currentPage <= 1) return null
-    return currentPage - 1
+    val prevPage = currentPage - 1
+    val text = textRepository.findByBookAndOrder(bookId, prevPage)
+    return if (text != null) prevPage else null
   }
 
   override fun saveCurrentPage(bookId: Long, pageNum: Int) {
-    val book = bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
 
     val text =
         textRepository.findByBookAndOrder(bookId, pageNum)
@@ -86,26 +86,15 @@ class ReadingServiceImpl(
 
     if (book.currentTextId == 0L) return null
 
-    val text = textRepository.findById(book.currentTextId) ?: return null
-    return text.order
+    return textRepository.findById(book.currentTextId)?.order
   }
 
   private fun lookupTermsForPage(tokens: List<String>, languageId: Long): Map<String, Term?> {
     val result = mutableMapOf<String, Term?>()
-    val uncachedTokens = mutableSetOf<String>()
+    val uniqueTokens = tokens.map { it.lowercase() }.toSet()
 
-    for (token in tokens) {
-      val lowercased = token.lowercase()
-      if (termCache.containsKey(lowercased)) {
-        result[lowercased] = termCache[lowercased]
-      } else {
-        uncachedTokens.add(lowercased)
-      }
-    }
-
-    for (tokenText in uncachedTokens) {
+    for (tokenText in uniqueTokens) {
       val term = termRepository.findByTextAndLanguage(tokenText, languageId)
-      termCache[tokenText] = term
       result[tokenText] = term
     }
 

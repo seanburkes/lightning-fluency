@@ -240,18 +240,26 @@ class ReadingServiceTest {
   }
 
   @Test
-  fun `termCache caches lookups across calls`() {
+  fun `parsePageWithTerms deduplicates tokens for lookup`() {
     val language = Language(id = 1L, name = "English")
     val term = Term(id = 1L, languageId = 1L, text = "hello", status = 1)
 
     every { languageRepository.findById(1L) } returns language
-    every { parserService.parseText(any(), any()) } returns
-        listOf(ParsedToken(token = "hello", isWord = true, order = 0))
+    every { parserService.parseText("hello hello world", language) } returns
+        listOf(
+            ParsedToken(token = "hello", isWord = true, order = 0),
+            ParsedToken(token = " ", isWord = false, order = 1),
+            ParsedToken(token = "hello", isWord = true, order = 2),
+            ParsedToken(token = " ", isWord = false, order = 3),
+            ParsedToken(token = "world", isWord = true, order = 4),
+        )
     every { termRepository.findByTextAndLanguage("hello", 1L) } returns term
+    every { termRepository.findByTextAndLanguage(" ", 1L) } returns null
+    every { termRepository.findByTextAndLanguage("world", 1L) } returns null
 
-    readingService.parsePageWithTerms("hello", 1L)
-    readingService.parsePageWithTerms("hello", 1L)
+    readingService.parsePageWithTerms("hello hello world", 1L)
 
     verify(exactly = 1) { termRepository.findByTextAndLanguage("hello", 1L) }
+    verify(exactly = 1) { termRepository.findByTextAndLanguage("world", 1L) }
   }
 }
