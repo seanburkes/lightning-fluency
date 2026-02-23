@@ -1,6 +1,6 @@
 package com.lute.application
 
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TagRepository
 import com.lute.db.repositories.TermRepository
@@ -30,8 +30,7 @@ class TermCsvServiceImpl(
   }
 
   override fun importFromCsv(csv: String, languageId: Long): ImportResult {
-    languageRepository.findById(languageId)
-        ?: throw LanguageNotFoundException("Language with id $languageId not found")
+    languageRepository.findById(languageId) ?: throw EntityNotFoundException("Language", languageId)
 
     var imported = 0
     var skipped = 0

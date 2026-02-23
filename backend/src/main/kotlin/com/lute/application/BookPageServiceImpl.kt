@@ -1,22 +1,18 @@
 package com.lute.application
 
-import com.lute.application.exceptions.BookNotFoundException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.TextRepository
 import com.lute.domain.Text
 import com.lute.dtos.TextDto
-import java.time.format.DateTimeFormatter
+import com.lute.utils.DateFormatters.toIsoString
 
 class BookPageServiceImpl(
     private val bookRepository: BookRepository,
     private val textRepository: TextRepository,
 ) : BookPageService {
-  private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-
   override fun getBookPages(bookId: Long): List<TextDto> {
-    val book =
-        bookRepository.findById(bookId)
-            ?: throw BookNotFoundException("Book with id $bookId not found")
+    bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
 
     return textRepository.findByBookId(bookId).map { it.toDto() }
   }
@@ -77,7 +73,7 @@ class BookPageServiceImpl(
         book_id = bookId,
         order = order,
         text = text,
-        read_date = readDate?.format(dateFormatter),
+        read_date = readDate.toIsoString(),
         word_count = wordCount,
     )
   }

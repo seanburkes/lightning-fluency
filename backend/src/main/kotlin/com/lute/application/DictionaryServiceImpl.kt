@@ -1,7 +1,6 @@
 package com.lute.application
 
-import com.lute.application.exceptions.LanguageNotFoundException
-import com.lute.application.exceptions.ValidationException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.DictionaryRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.domain.Dictionary
@@ -81,34 +80,19 @@ class DictionaryServiceImpl(
 
   private fun validateLanguageExists(languageId: Long) {
     if (languageRepository.findById(languageId) == null) {
-      throw LanguageNotFoundException("Language with id $languageId not found")
+      throw EntityNotFoundException("Language", languageId)
     }
   }
 
   private fun validateDictionaryDto(useFor: String, type: String, dictUri: String) {
-    val errors = mutableListOf<Pair<String, String>>()
-
-    if (useFor.isBlank()) {
-      errors.add("ld_use_for" to "Use for is required")
-    } else if (useFor.length > 20) {
-      errors.add("ld_use_for" to "Use for must be 20 characters or less")
-    }
-
-    if (type.isBlank()) {
-      errors.add("ld_type" to "Type is required")
-    } else if (type.length > 20) {
-      errors.add("ld_type" to "Type must be 20 characters or less")
-    }
-
-    if (dictUri.isBlank()) {
-      errors.add("ld_dict_uri" to "Dictionary URI is required")
-    } else if (dictUri.length > 200) {
-      errors.add("ld_dict_uri" to "Dictionary URI must be 200 characters or less")
-    }
-
-    if (errors.isNotEmpty()) {
-      throw ValidationException(errors)
-    }
+    ValidationUtils.validator()
+        .required("ld_use_for", useFor, "Use for")
+        .maxLength("ld_use_for", useFor, 20, "Use for")
+        .required("ld_type", type, "Type")
+        .maxLength("ld_type", type, 20, "Type")
+        .required("ld_dict_uri", dictUri, "Dictionary URI")
+        .maxLength("ld_dict_uri", dictUri, 200, "Dictionary URI")
+        .throwIfErrors()
   }
 
   private fun Dictionary.toDto(): DictionaryDto {

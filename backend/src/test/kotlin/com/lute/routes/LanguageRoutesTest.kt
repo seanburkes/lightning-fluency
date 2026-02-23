@@ -2,9 +2,9 @@ package com.lute.routes
 
 import com.lute.application.DictionaryService
 import com.lute.application.LanguageService
-import com.lute.application.exceptions.DuplicateLanguageException
-import com.lute.application.exceptions.LanguageInUseException
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.DuplicateEntityException
+import com.lute.application.exceptions.EntityInUseException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.domain.ErrorResponse
 import com.lute.dtos.*
@@ -32,22 +32,22 @@ class LanguageRoutesTest {
       testApplication {
         install(ServerContentNegotiation) { json() }
         install(StatusPages) {
-          exception<LanguageNotFoundException> { call, cause ->
+          exception<EntityNotFoundException> { call, cause ->
             call.respond(
                 HttpStatusCode.NotFound,
-                ErrorResponse(cause.message ?: "Language not found"),
+                ErrorResponse(cause.message ?: "Entity not found"),
             )
           }
-          exception<LanguageInUseException> { call, cause ->
+          exception<EntityInUseException> { call, cause ->
             call.respond(
                 HttpStatusCode.Conflict,
-                ErrorResponse(cause.message ?: "Language is in use"),
+                ErrorResponse(cause.message ?: "Entity is in use"),
             )
           }
-          exception<DuplicateLanguageException> { call, cause ->
+          exception<DuplicateEntityException> { call, cause ->
             call.respond(
                 HttpStatusCode.Conflict,
-                ErrorResponse(cause.message ?: "Language with this name already exists"),
+                ErrorResponse(cause.message ?: "Entity already exists"),
             )
           }
           exception<ValidationException> { call, cause ->
@@ -128,7 +128,7 @@ class LanguageRoutesTest {
     val client = createClient { install(ClientContentNegotiation) { json() } }
     val dto = CreateLanguageDto(name = "English", parser_type = "spacedel")
     every { languageService.createLanguage(dto) } throws
-        DuplicateLanguageException("Language exists")
+        DuplicateEntityException("Language", "English")
 
     val response =
         client.post("/api/languages") {
@@ -184,7 +184,7 @@ class LanguageRoutesTest {
   @Test
   fun `DELETE api-languages-id returns 409 for language in use`() = testApplicationWithRoutes {
     val client = createClient { install(ClientContentNegotiation) { json() } }
-    every { languageService.deleteLanguage(1) } throws LanguageInUseException("Language has books")
+    every { languageService.deleteLanguage(1) } throws EntityInUseException("Language", "has books")
 
     val response = client.delete("/api/languages/1")
 
@@ -195,7 +195,8 @@ class LanguageRoutesTest {
   fun `DELETE api-languages-id returns 404 for non-existent language`() =
       testApplicationWithRoutes {
         val client = createClient { install(ClientContentNegotiation) { json() } }
-        every { languageService.deleteLanguage(999) } throws LanguageNotFoundException("Not found")
+        every { languageService.deleteLanguage(999) } throws
+            EntityNotFoundException("Language", 999)
 
         val response = client.delete("/api/languages/999")
 

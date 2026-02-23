@@ -1,10 +1,9 @@
 package com.lute
 
-import com.lute.application.exceptions.BookNotFoundException
-import com.lute.application.exceptions.DuplicateLanguageException
-import com.lute.application.exceptions.LanguageInUseException
-import com.lute.application.exceptions.LanguageNotFoundException
-import com.lute.application.exceptions.TagNotFoundException
+import com.lute.application.exceptions.ApplicationException
+import com.lute.application.exceptions.DuplicateEntityException
+import com.lute.application.exceptions.EntityInUseException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.db.DatabaseFactory
 import com.lute.db.migrations.MigrationException
@@ -49,32 +48,25 @@ fun Application.module() {
   install(ContentNegotiation) { json(Json { prettyPrint = true }) }
 
   install(StatusPages) {
-    exception<BookNotFoundException> { call, cause ->
-      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Book not found"))
+    exception<EntityNotFoundException> { call, cause ->
+      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Entity not found"))
     }
 
-    exception<TagNotFoundException> { call, cause ->
-      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Tag not found"))
+    exception<DuplicateEntityException> { call, cause ->
+      call.respond(HttpStatusCode.Conflict, ErrorResponse(cause.message ?: "Entity already exists"))
     }
 
-    exception<LanguageNotFoundException> { call, cause ->
-      call.respond(HttpStatusCode.NotFound, ErrorResponse(cause.message ?: "Language not found"))
-    }
-
-    exception<LanguageInUseException> { call, cause ->
-      call.respond(HttpStatusCode.Conflict, ErrorResponse(cause.message ?: "Language is in use"))
-    }
-
-    exception<DuplicateLanguageException> { call, cause ->
-      call.respond(
-          HttpStatusCode.Conflict,
-          ErrorResponse(cause.message ?: "Language with this name already exists"),
-      )
+    exception<EntityInUseException> { call, cause ->
+      call.respond(HttpStatusCode.Conflict, ErrorResponse(cause.message ?: "Entity is in use"))
     }
 
     exception<ValidationException> { call, cause ->
       val errors = cause.errors.map { (field, message) -> ValidationError(field, message) }
       call.respond(HttpStatusCode.BadRequest, ValidationErrorResponse(errors))
+    }
+
+    exception<ApplicationException> { call, cause ->
+      call.respond(HttpStatusCode.BadRequest, ErrorResponse(cause.message ?: "Application error"))
     }
 
     exception<Throwable> { call, cause ->
@@ -95,6 +87,12 @@ fun Application.module() {
 
     val bookRoutes = ServiceLocator.bookRoutes
     bookRoutes.register(this)
+
+    val termRoutes = ServiceLocator.termRoutes
+    termRoutes.register(this)
+
+    val readingRoutes = ServiceLocator.readingRoutes
+    readingRoutes.register(this)
   }
 }
 

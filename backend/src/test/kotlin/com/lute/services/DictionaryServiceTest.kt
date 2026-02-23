@@ -1,7 +1,7 @@
 package com.lute.services
 
 import com.lute.application.DictionaryServiceImpl
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.db.repositories.DictionaryRepository
 import com.lute.db.repositories.LanguageRepository
@@ -63,7 +63,7 @@ class DictionaryServiceTest {
   fun `getDictionariesForLanguage throws exception for non-existent language`() {
     every { languageRepository.findById(999) } returns null
 
-    assertFailsWith<LanguageNotFoundException> { dictionaryService.getDictionariesForLanguage(999) }
+    assertFailsWith<EntityNotFoundException> { dictionaryService.getDictionariesForLanguage(999) }
   }
 
   @Test
@@ -99,7 +99,7 @@ class DictionaryServiceTest {
         )
     every { languageRepository.findById(999) } returns null
 
-    assertFailsWith<LanguageNotFoundException> { dictionaryService.addDictionary(999, dto) }
+    assertFailsWith<EntityNotFoundException> { dictionaryService.addDictionary(999, dto) }
   }
 
   @Test
@@ -157,7 +157,7 @@ class DictionaryServiceTest {
     every { languageRepository.findById(999) } returns null
     val dto = UpdateDictionaryDto(ld_dict_uri = "https://new.com")
 
-    assertFailsWith<LanguageNotFoundException> { dictionaryService.updateDictionary(1, 999, dto) }
+    assertFailsWith<EntityNotFoundException> { dictionaryService.updateDictionary(1, 999, dto) }
   }
 
   @Test
@@ -209,7 +209,7 @@ class DictionaryServiceTest {
   fun `deleteDictionary throws exception for non-existent language`() {
     every { languageRepository.findById(999) } returns null
 
-    assertFailsWith<LanguageNotFoundException> { dictionaryService.deleteDictionary(1, 999) }
+    assertFailsWith<EntityNotFoundException> { dictionaryService.deleteDictionary(1, 999) }
   }
 
   @Test
@@ -273,7 +273,7 @@ class DictionaryServiceTest {
   fun `toggleDictionaryActive throws exception for non-existent language`() {
     every { languageRepository.findById(999) } returns null
 
-    assertFailsWith<LanguageNotFoundException> {
+    assertFailsWith<EntityNotFoundException> {
       dictionaryService.toggleDictionaryActive(1, 999, true)
     }
   }

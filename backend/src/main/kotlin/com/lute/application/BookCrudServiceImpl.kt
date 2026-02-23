@@ -1,6 +1,6 @@
 package com.lute.application
 
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TagRepository
@@ -9,7 +9,6 @@ import com.lute.domain.Book
 import com.lute.dtos.BookDto
 import com.lute.dtos.CreateBookDto
 import com.lute.dtos.UpdateBookDto
-import java.time.format.DateTimeFormatter
 
 class BookCrudServiceImpl(
     private val bookRepository: BookRepository,
@@ -18,8 +17,6 @@ class BookCrudServiceImpl(
     private val tagRepository: TagRepository,
     private val pageService: BookPageService,
 ) : BookCrudService {
-  private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-
   override fun getAllBooks(languageId: Long?, archived: Boolean?): List<BookDto> {
     val books = bookRepository.findAll(languageId = languageId, archived = archived)
     return booksToDtos(books)
@@ -31,9 +28,8 @@ class BookCrudServiceImpl(
   }
 
   override fun createBook(dto: CreateBookDto): BookDto {
-    val language =
-        languageRepository.findById(dto.language_id)
-            ?: throw LanguageNotFoundException("Language with id ${dto.language_id} not found")
+    languageRepository.findById(dto.language_id)
+        ?: throw EntityNotFoundException("Language", dto.language_id)
 
     val book =
         Book(

@@ -1,8 +1,8 @@
 package com.lute.application
 
-import com.lute.application.exceptions.DuplicateLanguageException
-import com.lute.application.exceptions.LanguageInUseException
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.DuplicateEntityException
+import com.lute.application.exceptions.EntityInUseException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.domain.Language
@@ -28,7 +28,7 @@ class LanguageCrudServiceImpl(
     validationService.validateLanguageNameRequired(dto.name)
 
     if (validationService.isDuplicateLanguageName(dto.name, excludeId = null)) {
-      throw DuplicateLanguageException("Language with name '${dto.name}' already exists")
+      throw DuplicateEntityException("Language", dto.name)
     }
 
     if (!validationService.validateParserType(dto.parser_type)) {
@@ -76,7 +76,7 @@ class LanguageCrudServiceImpl(
       validationService.validateLanguageNameRequired(name)
 
       if (validationService.isDuplicateLanguageName(name, excludeId = id)) {
-        throw DuplicateLanguageException("Language with name '$name' already exists")
+        throw DuplicateEntityException("Language", name)
       }
     }
 
@@ -124,30 +124,29 @@ class LanguageCrudServiceImpl(
   }
 
   override fun deleteLanguage(id: Long) {
-    val language =
-        languageRepository.findById(id)
-            ?: throw LanguageNotFoundException(
-                "Language with id $id not found",
-            )
+    val language = languageRepository.findById(id) ?: throw EntityNotFoundException("Language", id)
 
     val bookCount = languageRepository.countBooksForLanguage(id)
     if (bookCount > 0) {
-      throw LanguageInUseException(
-          "Cannot delete language '${language.name}' because it has $bookCount book(s)",
+      throw EntityInUseException(
+          "Language",
+          "it has $bookCount book(s)",
       )
     }
 
     val termCount = languageRepository.countTermsForLanguage(id)
     if (termCount > 0) {
-      throw LanguageInUseException(
-          "Cannot delete language '${language.name}' because it has $termCount term(s)",
+      throw EntityInUseException(
+          "Language",
+          "it has $termCount term(s)",
       )
     }
 
     val dictCount = languageRepository.countDictionariesForLanguage(id)
     if (dictCount > 0) {
-      throw LanguageInUseException(
-          "Cannot delete language '${language.name}' because it has $dictCount dictionary/dictionaries",
+      throw EntityInUseException(
+          "Language",
+          "it has $dictCount dictionary/dictionaries",
       )
     }
 

@@ -1,9 +1,11 @@
 package com.lute.services
 
+import com.lute.application.LanguageCrudServiceImpl
 import com.lute.application.LanguageServiceImpl
+import com.lute.application.LanguageValidationServiceImpl
 import com.lute.application.ValidationResult
-import com.lute.application.exceptions.DuplicateLanguageException
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.DuplicateEntityException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.domain.Language
@@ -24,7 +26,10 @@ import kotlin.test.assertTrue
 class LanguageServiceTest {
   private val languageRepository = mockk<LanguageRepository>(relaxed = true)
   private val parserFactory = ParserFactory()
-  private val languageService = LanguageServiceImpl(languageRepository, parserFactory)
+  private val validationService = LanguageValidationServiceImpl(languageRepository, parserFactory)
+  private val crudService =
+      LanguageCrudServiceImpl(languageRepository, parserFactory, validationService)
+  private val languageService = LanguageServiceImpl(crudService, validationService)
 
   @Test
   fun `getAllLanguages returns all languages`() {
@@ -91,7 +96,7 @@ class LanguageServiceTest {
     val existing = Language(id = 1, name = "English", parserType = "spacedel")
     every { languageRepository.findByName("English") } returns existing
 
-    assertFailsWith<DuplicateLanguageException> { languageService.createLanguage(dto) }
+    assertFailsWith<DuplicateEntityException> { languageService.createLanguage(dto) }
   }
 
   @Test
@@ -138,7 +143,7 @@ class LanguageServiceTest {
     every { languageRepository.findById(1) } returns existing
     every { languageRepository.findByName("Spanish") } returns other
 
-    assertFailsWith<DuplicateLanguageException> { languageService.updateLanguage(1, dto) }
+    assertFailsWith<DuplicateEntityException> { languageService.updateLanguage(1, dto) }
   }
 
   @Test
@@ -155,7 +160,7 @@ class LanguageServiceTest {
   fun `deleteLanguage throws exception for non-existent language`() {
     every { languageRepository.findById(999) } returns null
 
-    assertFailsWith<LanguageNotFoundException> { languageService.deleteLanguage(999) }
+    assertFailsWith<EntityNotFoundException> { languageService.deleteLanguage(999) }
   }
 
   @Test

@@ -1,6 +1,5 @@
 package com.lute.application
 
-import com.lute.application.exceptions.ValidationException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.parse.ParserFactory
 
@@ -42,12 +41,10 @@ class LanguageValidationServiceImpl(
   }
 
   override fun validateLanguageNameRequired(name: String) {
-    if (name.isBlank()) {
-      throw ValidationException(listOf("name" to "Language name is required"))
-    }
-    if (name.length > 40) {
-      throw ValidationException(listOf("name" to "Language name must be 40 characters or less"))
-    }
+    ValidationUtils.validator()
+        .required("name", name, "Language name")
+        .maxLength("name", name, 40, "Language name")
+        .throwIfErrors()
   }
 
   override fun isDuplicateLanguageName(name: String, excludeId: Long?): Boolean {

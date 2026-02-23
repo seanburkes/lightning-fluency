@@ -1,7 +1,7 @@
 package com.lute.application
 
-import com.lute.application.exceptions.DuplicateTermException
-import com.lute.application.exceptions.LanguageNotFoundException
+import com.lute.application.exceptions.DuplicateEntityException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TagRepository
 import com.lute.db.repositories.TermRepository
@@ -9,15 +9,13 @@ import com.lute.domain.Term
 import com.lute.dtos.CreateTermDto
 import com.lute.dtos.TermDto
 import com.lute.dtos.UpdateTermDto
-import java.time.format.DateTimeFormatter
+import com.lute.utils.DateFormatters.toIsoString
 
 class TermCrudServiceImpl(
     private val termRepository: TermRepository,
     private val languageRepository: LanguageRepository,
     private val tagRepository: TagRepository,
 ) : TermCrudService {
-  private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-
   override fun getAllTerms(
       languageId: Long?,
       status: Int?,
@@ -35,11 +33,11 @@ class TermCrudServiceImpl(
 
   override fun createTerm(dto: CreateTermDto): TermDto {
     languageRepository.findById(dto.language_id)
-        ?: throw LanguageNotFoundException("Language with id ${dto.language_id} not found")
+        ?: throw EntityNotFoundException("Language", dto.language_id)
 
     val existing = termRepository.findByTextAndLanguage(dto.text.lowercase(), dto.language_id)
     if (existing != null) {
-      throw DuplicateTermException("Term '${dto.text}' already exists for this language")
+      throw DuplicateEntityException("Term", dto.text)
     }
 
     val term =
@@ -68,7 +66,7 @@ class TermCrudServiceImpl(
       val duplicate =
           termRepository.findByTextAndLanguage(dto.text.lowercase(), existing.languageId)
       if (duplicate != null && duplicate.id != id) {
-        throw DuplicateTermException("Term '${dto.text}' already exists for this language")
+        throw DuplicateEntityException("Term", dto.text)
       }
     }
 
@@ -134,8 +132,8 @@ class TermCrudServiceImpl(
           tags = tagTexts,
           parents = parentTexts,
           children_count = childrenCount,
-          created_at = term.created?.format(dateFormatter),
-          status_changed_at = term.statusChanged?.format(dateFormatter),
+          created_at = term.created.toIsoString(),
+          status_changed_at = term.statusChanged.toIsoString(),
       )
     }
   }

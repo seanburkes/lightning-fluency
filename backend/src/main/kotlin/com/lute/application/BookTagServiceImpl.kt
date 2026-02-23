@@ -1,7 +1,6 @@
 package com.lute.application
 
-import com.lute.application.exceptions.BookNotFoundException
-import com.lute.application.exceptions.TagNotFoundException
+import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.TagRepository
 
@@ -10,8 +9,8 @@ class BookTagServiceImpl(
     private val tagRepository: TagRepository,
 ) : BookTagService {
   override fun addTagToBook(bookId: Long, tagId: Long) {
-    bookRepository.findById(bookId) ?: throw BookNotFoundException("Book with id $bookId not found")
-    tagRepository.findById(tagId) ?: throw TagNotFoundException("Tag with id $tagId not found")
+    bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    tagRepository.findById(tagId) ?: throw EntityNotFoundException("Tag", tagId)
 
     bookRepository.addTagToBook(bookId, tagId)
   }
