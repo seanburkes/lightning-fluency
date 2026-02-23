@@ -1,13 +1,18 @@
 package com.lute.presentation
 
+import com.lute.application.PopupService
 import com.lute.application.ReadingService
+import com.lute.domain.ErrorResponse
 import com.lute.dtos.SaveCurrentPageDto
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 
-class ReadingRoutes(private val readingService: ReadingService) {
+class ReadingRoutes(
+    private val readingService: ReadingService,
+    private val popupService: PopupService,
+) {
   fun register(route: Route) {
     route.route("/api/read/{bookId}") {
       route("/pages") {
@@ -65,6 +70,22 @@ class ReadingRoutes(private val readingService: ReadingService) {
 
         readingService.saveCurrentPage(bookId, dto.page_num)
         call.respond(HttpStatusCode.OK)
+      }
+
+      get("/popup") {
+        val bookId = call.parseIdOrBadRequest("bookId", "book") ?: return@get
+        val word = call.parameters["word"]
+
+        if (word.isNullOrBlank()) {
+          call.respond(
+              HttpStatusCode.BadRequest,
+              ErrorResponse(error = "word parameter is required"),
+          )
+          return@get
+        }
+
+        val popupData = popupService.getPopupData(bookId, word)
+        call.respond(popupData)
       }
     }
   }

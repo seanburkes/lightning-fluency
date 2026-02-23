@@ -1,9 +1,11 @@
 package com.lute.routes
 
+import com.lute.application.PopupService
 import com.lute.application.ReadingService
 import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.domain.ErrorResponse
 import com.lute.dtos.PageDto
+import com.lute.dtos.PopupDto
 import com.lute.dtos.ReadingPageDto
 import com.lute.dtos.SaveCurrentPageDto
 import com.lute.dtos.TokenDto
@@ -25,6 +27,7 @@ import kotlin.test.assertEquals
 
 class ReadingRoutesTest {
   private val readingService = mockk<ReadingService>(relaxed = true)
+  private val popupService = mockk<PopupService>(relaxed = true)
 
   private fun testApplicationWithRoutes(block: suspend ApplicationTestBuilder.() -> Unit) =
       testApplication {
@@ -38,7 +41,7 @@ class ReadingRoutesTest {
           }
         }
         routing {
-          val readingRoutes = ReadingRoutes(readingService)
+          val readingRoutes = ReadingRoutes(readingService, popupService)
           readingRoutes.register(this)
         }
         block()
@@ -214,4 +217,43 @@ class ReadingRoutesTest {
 
         assertEquals(HttpStatusCode.NotFound, response.status)
       }
+
+  @Test
+  fun `GET api-read-bookId-popup returns popup data`() = testApplicationWithRoutes {
+    val client = createClient { install(ClientContentNegotiation) { json() } }
+    val popupDto = PopupDto(sentence = "Hello world.", context = "Hello world.")
+    every { popupService.getPopupData(1L, "Hello") } returns popupDto
+
+    val response = client.get("/api/read/1/popup?word=Hello")
+
+    assertEquals(HttpStatusCode.OK, response.status)
+  }
+
+  @Test
+  fun `GET api-read-bookId-popup returns 400 when word is missing`() = testApplicationWithRoutes {
+    val client = createClient { install(ClientContentNegotiation) { json() } }
+
+    val response = client.get("/api/read/1/popup")
+
+    assertEquals(HttpStatusCode.BadRequest, response.status)
+  }
+
+  @Test
+  fun `GET api-read-bookId-popup returns 400 for invalid bookId`() = testApplicationWithRoutes {
+    val client = createClient { install(ClientContentNegotiation) { json() } }
+
+    val response = client.get("/api/read/invalid/popup?word=Hello")
+
+    assertEquals(HttpStatusCode.BadRequest, response.status)
+  }
+
+  @Test
+  fun `GET api-read-bookId-popup returns 404 for non-existent book`() = testApplicationWithRoutes {
+    val client = createClient { install(ClientContentNegotiation) { json() } }
+    every { popupService.getPopupData(999L, "Hello") } throws EntityNotFoundException("Book", 999L)
+
+    val response = client.get("/api/read/999/popup?word=Hello")
+
+    assertEquals(HttpStatusCode.NotFound, response.status)
+  }
 }

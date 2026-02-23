@@ -22,6 +22,8 @@ import com.lute.application.LanguageValidationService
 import com.lute.application.LanguageValidationServiceImpl
 import com.lute.application.ParserService
 import com.lute.application.ParserServiceImpl
+import com.lute.application.PopupService
+import com.lute.application.PopupServiceImpl
 import com.lute.application.ReadingService
 import com.lute.application.ReadingServiceImpl
 import com.lute.application.TermBulkService
@@ -169,7 +171,19 @@ object ServiceLocator {
         parserService,
     )
   }
-  val readingRoutes: ReadingRoutes by lazy { ReadingRoutes(readingService) }
+  val readingRoutes: ReadingRoutes by lazy { ReadingRoutes(readingService, popupService) }
+
+  // Popup
+  val popupService: PopupService by lazy {
+    PopupServiceImpl(
+        bookRepository,
+        textRepository,
+        termRepository,
+        languageRepository,
+        parserService,
+        termCrudService,
+    )
+  }
 
   val languageRoutes: LanguageRoutes by lazy { LanguageRoutes(languageService, dictionaryService) }
 }
