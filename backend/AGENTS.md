@@ -11,9 +11,17 @@ backend/src/main/kotlin/com/lute/
 │   └── HealthResponse.kt
 ├── application/      # Use cases, application services
 │   ├── HealthService.kt      # Interface
-│   └── HealthServiceImpl.kt  # Implementation
+│   ├── HealthServiceImpl.kt  # Implementation
+│   ├── exceptions/           # Exception hierarchy
+│   │   ├── ApplicationExceptions.kt  # EntityNotFoundException, DuplicateEntityException, EntityInUseException
+│   │   └── LanguageExceptions.kt     # ValidationException
+│   └── ValidationUtils.kt    # Fluent validation builder
 ├── presentation/     # Controllers, routes
-│   └── HealthRoute.kt
+│   ├── HealthRoute.kt
+│   ├── RouteExtensions.kt    # parseIdOrBadRequest, requireEntity helpers
+│   └── ...
+├── utils/           # Shared utilities
+│   └── DateFormatters.kt     # ISO_LOCAL formatter with toIsoString() extension
 ├── di/              # Dependency injection
 │   └── ServiceLocator.kt     # Manual DI container
 └── Application.kt   # Ktor server setup
@@ -32,7 +40,9 @@ backend/src/main/kotlin/com/lute/
 
 - **Application.kt**: Ktor server configuration, plugins (ContentNegotiation, StatusPages), routing
 - **ServiceLocator.kt**: Manual DI container using lazy initialization
-- **HealthRoute.kt**: Route registration with injected service
+- **RouteExtensions.kt**: Extension functions for route parameter parsing and error responses
+- **ValidationUtils.kt**: Fluent validation builder with required(), maxLength(), regex()
+- **ApplicationExceptions.kt**: Sealed exception hierarchy (EntityNotFoundException, DuplicateEntityException, EntityInUseException)
 
 ## Conventions
 
@@ -65,6 +75,38 @@ backend/src/main/kotlin/com/lute/
 - Test host: `io.ktor:ktor-server-test-host`
 - Content negotiation: `io.ktor:ktor-client-content-negotiation`
 - Kotlin test with JUnit 5 platform
+
+## New Utilities
+
+### RouteExtensions
+```kotlin
+// Parameter parsing with error responses
+val id = call.parseIdOrBadRequest("id", "book") ?: return@get
+val entity = call.requireEntity(id, "Book", bookService::getBookById) ?: return@get
+call.respondNotFound("Book")
+
+// Silent parsing (no error response)
+val languageId = call.parseId("language_id")
+val limit = call.parseIntParam("limit") ?: 100
+val archived = call.parseBooleanParam("archived")
+```
+
+### ValidationUtils
+```kotlin
+ValidationUtils.validator()
+    .required("name", dto.name, "Language name")
+    .maxLength("name", dto.name!!, 40, "Language name")
+    .regex("pattern", dto.pattern, "Pattern")
+    .custom("field", condition, "Error message")
+    .throwIfErrors()
+```
+
+### DateFormatters
+```kotlin
+import com.lute.utils.DateFormatters.toIsoString
+
+created_at = term.created.toIsoString()
+```
 
 ## Notes
 
