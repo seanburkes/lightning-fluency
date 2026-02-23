@@ -71,6 +71,47 @@ npm run format     # Prettier formatting
 npm run lint       # ESLint
 ```
 
+## Testing
+
+### Test Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run test` | Run unit tests (Vitest) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:ui` | Vitest UI dashboard |
+| `npm run test:coverage` | Run tests with coverage |
+| `npm run test:e2e` | Run E2E tests (Playwright) |
+| `npm run test:e2e:ui` | Playwright UI mode |
+| `npm run storybook` | Start Storybook dev server |
+| `npm run build-storybook` | Build static Storybook |
+
+### Testing Stack
+
+| Tool | Purpose |
+|------|---------|
+| Vitest | Unit test runner with jsdom |
+| @testing-library/svelte | Component testing |
+| jest-axe | Accessibility testing |
+| MSW | API mocking |
+| Playwright | E2E browser automation |
+| Storybook | Component documentation |
+
+### Test File Locations
+
+| Type | Pattern |
+|------|---------|
+| Unit tests | `src/**/*.test.ts` |
+| Component tests | `src/**/*.svelte.test.ts` |
+| E2E tests | `e2e/**/*.spec.ts` |
+| Stories | `src/**/*.stories.ts` |
+
+### MSW Mocks
+
+API handlers in `src/test/mocks/handlers.ts` mock backend responses.
+- `server.ts` - Node environment (Vitest)
+- `browser.ts` - Browser environment (Storybook, Playwright)
+
 ## Configuration
 
 - **Prettier**: tabs, single quotes, no trailing commas, 100 char width
