@@ -100,23 +100,15 @@ class TermRoutes(private val termService: TermService) {
         route("/parents") {
           get {
             val id = call.parseIdOrBadRequest("id", "term") ?: return@get
-            try {
-              val parents = termService.getParents(id)
-              call.respond(parents)
-            } catch (e: Exception) {
-              call.respondNotFound("Term")
-            }
+            val parents = termService.getParents(id)
+            call.respond(parents)
           }
 
           post {
             val id = call.parseIdOrBadRequest("id", "term") ?: return@post
             val parentId = call.parseIdOrBadRequest("parent_id", "parent term") ?: return@post
-            try {
-              termService.addParent(id, parentId)
-              call.respond(HttpStatusCode.Created)
-            } catch (e: Exception) {
-              call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Error")))
-            }
+            termService.addParent(id, parentId)
+            call.respond(HttpStatusCode.Created)
           }
 
           route("/{parentId}") {
