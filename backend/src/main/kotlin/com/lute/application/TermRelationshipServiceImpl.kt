@@ -1,6 +1,5 @@
 package com.lute.application
 
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.TagRepository
 import com.lute.db.repositories.TermRepository
 import com.lute.domain.Term
@@ -12,8 +11,8 @@ class TermRelationshipServiceImpl(
     private val tagRepository: TagRepository,
 ) : TermRelationshipService {
   override fun addParent(termId: Long, parentId: Long) {
-    termRepository.findById(termId) ?: throw EntityNotFoundException("Term", termId)
-    termRepository.findById(parentId) ?: throw EntityNotFoundException("Term", parentId)
+    termRepository.require(termId, "Term")
+    termRepository.require(parentId, "Term")
 
     termRepository.addParent(termId, parentId)
   }
@@ -23,7 +22,7 @@ class TermRelationshipServiceImpl(
   }
 
   override fun getParents(termId: Long): List<TermDto> {
-    termRepository.findById(termId) ?: throw EntityNotFoundException("Term", termId)
+    termRepository.require(termId, "Term")
 
     val parentIds = termRepository.getParentIdsForTerms(listOf(termId))[termId] ?: emptyList()
     val parents = termRepository.findByIds(parentIds)

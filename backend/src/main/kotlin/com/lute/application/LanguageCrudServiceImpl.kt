@@ -2,7 +2,6 @@ package com.lute.application
 
 import com.lute.application.exceptions.DuplicateEntityException
 import com.lute.application.exceptions.EntityInUseException
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.application.exceptions.ValidationException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.domain.Language
@@ -124,7 +123,7 @@ class LanguageCrudServiceImpl(
   }
 
   override fun deleteLanguage(id: Long) {
-    val language = languageRepository.findById(id) ?: throw EntityNotFoundException("Language", id)
+    val language = languageRepository.require(id, "Language")
 
     val bookCount = languageRepository.countBooksForLanguage(id)
     if (bookCount > 0) {

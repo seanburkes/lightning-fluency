@@ -1,7 +1,6 @@
 package com.lute.application
 
 import com.lute.application.exceptions.DuplicateEntityException
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TagRepository
 import com.lute.db.repositories.TermRepository
@@ -32,8 +31,7 @@ class TermCrudServiceImpl(
   }
 
   override fun createTerm(dto: CreateTermDto): TermDto {
-    languageRepository.findById(dto.language_id)
-        ?: throw EntityNotFoundException("Language", dto.language_id)
+    languageRepository.require(dto.language_id)
 
     val existing = termRepository.findByTextAndLanguage(dto.text.lowercase(), dto.language_id)
     if (existing != null) {

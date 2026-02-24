@@ -5,7 +5,6 @@ import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TermRepository
 import com.lute.db.repositories.TextRepository
-import com.lute.db.repositories.require
 import com.lute.domain.Term
 import com.lute.dtos.PageDto
 import com.lute.dtos.ReadingPageDto

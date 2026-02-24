@@ -1,6 +1,5 @@
 package com.lute.application
 
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TagRepository
@@ -28,8 +27,7 @@ class BookCrudServiceImpl(
   }
 
   override fun createBook(dto: CreateBookDto): BookDto {
-    languageRepository.findById(dto.language_id)
-        ?: throw EntityNotFoundException("Language", dto.language_id)
+    languageRepository.require(dto.language_id)
 
     val book =
         Book(

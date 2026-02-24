@@ -1,6 +1,5 @@
 package com.lute.application
 
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.TextRepository
 import com.lute.domain.Text
@@ -12,7 +11,7 @@ class BookPageServiceImpl(
     private val textRepository: TextRepository,
 ) : BookPageService {
   override fun getBookPages(bookId: Long): List<TextDto> {
-    bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    bookRepository.require(bookId, "Book")
 
     return textRepository.findByBookId(bookId).map { it.toDto() }
   }

@@ -1,6 +1,5 @@
 package com.lute.application
 
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.DictionaryRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.domain.Dictionary
@@ -79,9 +78,7 @@ class DictionaryServiceImpl(
   }
 
   private fun validateLanguageExists(languageId: Long) {
-    if (languageRepository.findById(languageId) == null) {
-      throw EntityNotFoundException("Language", languageId)
-    }
+    languageRepository.require(languageId)
   }
 
   private fun validateDictionaryDto(useFor: String, type: String, dictUri: String) {
