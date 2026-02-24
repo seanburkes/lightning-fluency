@@ -1,10 +1,10 @@
 package com.lute.application
 
-import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TermRepository
 import com.lute.db.repositories.TextRepository
+import com.lute.db.repositories.require
 import com.lute.domain.Book
 import com.lute.domain.Language
 import com.lute.domain.Term
@@ -19,11 +19,9 @@ class PopupServiceImpl(
     private val termCrudService: TermCrudService,
 ) : PopupService {
   override fun getPopupData(bookId: Long, word: String): PopupDto {
-    val book = bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    val book = bookRepository.require(bookId, "Book")
 
-    val language =
-        languageRepository.findById(book.languageId)
-            ?: throw EntityNotFoundException("Language", book.languageId)
+    val language = languageRepository.require(book.languageId, "Language")
 
     val term = getTermForWord(word.lowercase(), language.id)
 

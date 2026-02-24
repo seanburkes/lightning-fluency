@@ -5,6 +5,7 @@ import com.lute.db.repositories.BookRepository
 import com.lute.db.repositories.LanguageRepository
 import com.lute.db.repositories.TermRepository
 import com.lute.db.repositories.TextRepository
+import com.lute.db.repositories.require
 import com.lute.domain.Term
 import com.lute.dtos.PageDto
 import com.lute.dtos.ReadingPageDto
@@ -18,7 +19,7 @@ class ReadingServiceImpl(
     private val parserService: ParserService,
 ) : ReadingService {
   override fun getPage(bookId: Long, pageNum: Int): ReadingPageDto? {
-    val book = bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    val book = bookRepository.require(bookId, "Book")
 
     val text = textRepository.findByBookAndOrder(bookId, pageNum) ?: return null
 
@@ -38,9 +39,7 @@ class ReadingServiceImpl(
   }
 
   override fun parsePageWithTerms(text: String, languageId: Long): List<TokenDto> {
-    val language =
-        languageRepository.findById(languageId)
-            ?: throw EntityNotFoundException("Language", languageId)
+    val language = languageRepository.require(languageId, "Language")
 
     val parsedTokens = parserService.parseText(text, language)
     val termMap = lookupTermsForPage(parsedTokens.map { it.token }, languageId)
@@ -72,7 +71,7 @@ class ReadingServiceImpl(
   }
 
   override fun saveCurrentPage(bookId: Long, pageNum: Int) {
-    bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    bookRepository.require(bookId, "Book")
 
     val text =
         textRepository.findByBookAndOrder(bookId, pageNum)
@@ -82,7 +81,7 @@ class ReadingServiceImpl(
   }
 
   override fun getCurrentPage(bookId: Long): Int? {
-    val book = bookRepository.findById(bookId) ?: throw EntityNotFoundException("Book", bookId)
+    val book = bookRepository.require(bookId, "Book")
 
     if (book.currentTextId == 0L) return null
 
