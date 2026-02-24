@@ -25,7 +25,7 @@
 				type="number"
 				min="12"
 				max="24"
-				value={$settings.fontSize}
+				value={settings.fontSize}
 				oninput={handleFontSizeChange}
 			/>
 		</label>

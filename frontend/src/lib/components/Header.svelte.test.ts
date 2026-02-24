@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import { axe } from 'jest-axe';
 import Header from './Header.svelte';
-import { get } from 'svelte/store';
 import { settings } from '$lib/stores';
 
 describe('Header component', () => {
@@ -23,7 +22,7 @@ describe('Header component', () => {
 		const input = screen.getByRole('spinbutton') as HTMLInputElement;
 		input.value = '20';
 		input.dispatchEvent(new Event('input', { bubbles: true }));
-		expect(get(settings).fontSize).toBe(20);
+		expect(settings.fontSize).toBe(20);
 	});
 
 	it('has no accessibility violations', async () => {
