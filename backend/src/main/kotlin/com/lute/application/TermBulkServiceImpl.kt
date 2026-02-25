@@ -14,74 +14,38 @@ class TermBulkServiceImpl(
       status: Int?,
       tagIds: List<Long>?,
   ): BulkOperationResult {
-    var updated = 0
-    var failed = 0
-    val errors = mutableListOf<String>()
-
     when (operation) {
       "update_status" -> {
         if (status == null) {
           return BulkOperationResult(0, 0, listOf("status is required for update_status"))
         }
-        termIds.forEach { termId ->
-          try {
-            val term = termRepository.findById(termId)
-            if (term != null) {
-              termRepository.update(term.copy(status = status))
-              updated++
-            } else {
-              failed++
-              errors.add("Term $termId not found")
-            }
-          } catch (e: Exception) {
-            failed++
-            errors.add("Term $termId: ${e.message}")
-          }
+        if (termIds.isEmpty()) {
+          return BulkOperationResult(0, 0, emptyList())
         }
+        val updated = termRepository.updateStatus(termIds, status)
+        return BulkOperationResult(updated, 0, emptyList())
       }
       "add_tags" -> {
         if (tagIds == null) {
           return BulkOperationResult(0, 0, listOf("tag_ids are required for add_tags"))
         }
-        termIds.forEach { termId ->
-          try {
-            val term = termRepository.findById(termId)
-            if (term != null) {
-              tagIds.forEach { tagId -> tagRepository.addTagToTerm(termId, tagId) }
-              updated++
-            } else {
-              failed++
-              errors.add("Term $termId not found")
-            }
-          } catch (e: Exception) {
-            failed++
-            errors.add("Term $termId: ${e.message}")
-          }
+        if (termIds.isEmpty() || tagIds.isEmpty()) {
+          return BulkOperationResult(0, 0, emptyList())
         }
+        val updated = tagRepository.addTagsToTerms(termIds, tagIds)
+        return BulkOperationResult(updated, 0, emptyList())
       }
       "remove_tags" -> {
         if (tagIds == null) {
           return BulkOperationResult(0, 0, listOf("tag_ids are required for remove_tags"))
         }
-        termIds.forEach { termId ->
-          try {
-            val term = termRepository.findById(termId)
-            if (term != null) {
-              tagIds.forEach { tagId -> tagRepository.removeTagFromTerm(termId, tagId) }
-              updated++
-            } else {
-              failed++
-              errors.add("Term $termId not found")
-            }
-          } catch (e: Exception) {
-            failed++
-            errors.add("Term $termId: ${e.message}")
-          }
+        if (termIds.isEmpty() || tagIds.isEmpty()) {
+          return BulkOperationResult(0, 0, emptyList())
         }
+        val removed = tagRepository.removeTagsFromTerms(termIds, tagIds)
+        return BulkOperationResult(removed, 0, emptyList())
       }
       else -> return BulkOperationResult(0, 0, listOf("Unknown operation: $operation"))
     }
-
-    return BulkOperationResult(updated, failed, errors)
   }
 }

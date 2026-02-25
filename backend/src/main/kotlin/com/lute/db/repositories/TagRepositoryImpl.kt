@@ -43,8 +43,39 @@ class TagRepositoryImpl : TagRepository {
     }
   }
 
+  override fun addTagsToTerms(termIds: List<Long>, tagIds: List<Long>): Int = transaction {
+    if (termIds.isEmpty() || tagIds.isEmpty()) {
+      return@transaction 0
+    }
+    val existingPairs =
+        WordTagsTable.selectAll()
+            .where {
+              (WordTagsTable.WtWoID inList termIds) and (WordTagsTable.WtTgID inList tagIds)
+            }
+            .map { Pair(it[WordTagsTable.WtWoID], it[WordTagsTable.WtTgID]) }
+            .toSet()
+    val newPairs = termIds.flatMap { termId -> tagIds.map { tagId -> Pair(termId, tagId) } }
+    val toInsert = newPairs.filter { it !in existingPairs }
+    for ((termId, tagId) in toInsert) {
+      WordTagsTable.insert {
+        it[WtWoID] = termId
+        it[WtTgID] = tagId
+      }
+    }
+    toInsert.size
+  }
+
   override fun removeTagFromTerm(termId: Long, tagId: Long): Unit = transaction {
     WordTagsTable.deleteWhere { (WtWoID eq termId) and (WtTgID eq tagId) }
+  }
+
+  override fun removeTagsFromTerms(termIds: List<Long>, tagIds: List<Long>): Int = transaction {
+    if (termIds.isEmpty() || tagIds.isEmpty()) {
+      return@transaction 0
+    }
+    WordTagsTable.deleteWhere {
+      (WordTagsTable.WtWoID inList termIds) and (WordTagsTable.WtTgID inList tagIds)
+    }
   }
 
   override fun getTagsForTerm(termId: Long): List<Tag> = transaction {

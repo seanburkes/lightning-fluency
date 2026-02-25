@@ -101,6 +101,8 @@ interface TermRepository {
 
   fun update(term: Term)
 
+  fun updateStatus(termIds: List<Long>, status: Int): Int
+
   fun delete(id: Long)
 
   fun countByLanguage(languageId: Long): Int
@@ -137,7 +139,11 @@ interface TagRepository {
 
   fun addTagToTerm(termId: Long, tagId: Long)
 
+  fun addTagsToTerms(termIds: List<Long>, tagIds: List<Long>): Int
+
   fun removeTagFromTerm(termId: Long, tagId: Long)
+
+  fun removeTagsFromTerms(termIds: List<Long>, tagIds: List<Long>): Int
 
   fun getTagsForTerm(termId: Long): List<Tag>
 

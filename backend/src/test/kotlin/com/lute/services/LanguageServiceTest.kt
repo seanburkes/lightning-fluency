@@ -191,11 +191,11 @@ class LanguageServiceTest {
   fun `validateParserType returns true for valid parser types`() {
     assertTrue(languageService.validateParserType("spacedel"))
     assertTrue(languageService.validateParserType("turkish"))
+    assertTrue(languageService.validateParserType("japanese"))
   }
 
   @Test
   fun `validateParserType returns false for unimplemented parser types`() {
-    assertFalse(languageService.validateParserType("japanese"))
     assertFalse(languageService.validateParserType("chinese"))
     assertFalse(languageService.validateParserType("korean"))
   }
