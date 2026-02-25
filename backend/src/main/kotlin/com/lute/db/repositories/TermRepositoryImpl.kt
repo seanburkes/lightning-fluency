@@ -126,34 +126,33 @@ class TermRepositoryImpl : TermRepository {
     WordsTable.selectAll().where { conditions.reduce { acc, op -> acc and op } }.map { it.toTerm() }
   }
 
-  override fun getParentIdsForTerms(termIds: List<Long>): Map<Long, List<Long>> = transaction {
-    if (termIds.isEmpty()) {
-      emptyMap()
-    } else {
-      val rows = WordParentsTable.selectAll().where { WordParentsTable.WpWoID inList termIds }
-      val result = mutableMapOf<Long, MutableList<Long>>()
-      for (row in rows) {
-        val termId = row[WordParentsTable.WpWoID]
-        val parentId = row[WordParentsTable.WpParentWoID]
-        result.getOrPut(termId) { mutableListOf() }.add(parentId)
-      }
-      result
-    }
-  }
+   override fun getParentIdsForTerms(termIds: List<Long>): Map<Long, List<Long>> = transaction {
+     if (termIds.isEmpty()) {
+       emptyMap()
+     } else {
+       val rows = WordParentsTable.selectAll().where { WordParentsTable.WpWoID inList termIds }
+       rows.groupBy(
+           { it[WordParentsTable.WpWoID] },
+           { it[WordParentsTable.WpParentWoID] },
+       )
+     }
+   }
 
-  override fun getChildrenCountForTerms(termIds: List<Long>): Map<Long, Int> = transaction {
-    if (termIds.isEmpty()) {
-      emptyMap()
-    } else {
-      val rows = WordParentsTable.selectAll().where { WordParentsTable.WpParentWoID inList termIds }
-      val result = mutableMapOf<Long, Int>()
-      for (row in rows) {
-        val parentId = row[WordParentsTable.WpParentWoID]
-        result[parentId] = (result[parentId] ?: 0) + 1
-      }
-      result
-    }
-  }
+   override fun getChildrenCountForTerms(termIds: List<Long>): Map<Long, Int> = transaction {
+     if (termIds.isEmpty()) {
+       emptyMap()
+     } else {
+       WordParentsTable.select(
+               WordParentsTable.WpParentWoID,
+               WordParentsTable.WpParentWoID.count(),
+           )
+           .where { WordParentsTable.WpParentWoID inList termIds }
+           .groupBy(WordParentsTable.WpParentWoID)
+           .associate {
+             it[WordParentsTable.WpParentWoID] to it[WordParentsTable.WpParentWoID.count()].toInt()
+           }
+     }
+   }
 
   override fun deleteWithRelationships(id: Long): Unit = transaction {
     WordTagsTable.deleteWhere { WordTagsTable.WtWoID eq id }
