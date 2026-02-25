@@ -154,7 +154,23 @@ export const api = {
 		delete: (id: number) =>
 			fetch(`${API_BASE}/books/${id}`, { method: 'DELETE' }).then(handleResponse<void>),
 		getPage: (id: number, page: number) =>
-			fetch(`${API_BASE}/books/${id}/pages/${page}`).then(handleResponse<unknown>)
+			fetch(`${API_BASE}/books/${id}/pages/${page}`).then(handleResponse<unknown>),
+		uploadAudio: async (id: number, file: File): Promise<{ filename: string }> => {
+			const formData = new FormData();
+			formData.append('audio', file);
+			const response = await fetch(`${API_BASE}/books/${id}/audio`, {
+				method: 'POST',
+				body: formData
+			});
+			if (!response.ok) {
+				const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+				throw new Error(error.error || 'Upload failed');
+			}
+			return response.json();
+		},
+		getAudioUrl: (id: number): string => `${API_BASE}/books/${id}/audio`,
+		deleteAudio: (id: number) =>
+			fetch(`${API_BASE}/books/${id}/audio`, { method: 'DELETE' }).then(handleResponse<void>)
 	},
 	terms: {
 		getAll: (languageId?: number, status?: number, limit = 100, offset = 0) => {
