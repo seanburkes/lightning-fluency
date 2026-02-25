@@ -30,6 +30,8 @@ import com.lute.application.ReadingService
 import com.lute.application.ReadingServiceImpl
 import com.lute.application.SentenceParser
 import com.lute.application.SentenceParserImpl
+import com.lute.application.StatsService
+import com.lute.application.StatsServiceImpl
 import com.lute.application.TermBulkService
 import com.lute.application.TermBulkServiceImpl
 import com.lute.application.TermCrudService
@@ -65,6 +67,7 @@ import com.lute.presentation.BookRoutes
 import com.lute.presentation.HealthRoute
 import com.lute.presentation.LanguageRoutes
 import com.lute.presentation.ReadingRoutes
+import com.lute.presentation.StatsRoute
 import com.lute.presentation.TermRoutes
 
 object ServiceLocator {
@@ -195,4 +198,8 @@ object ServiceLocator {
   }
 
   val languageRoutes: LanguageRoutes by lazy { LanguageRoutes(languageService, dictionaryService) }
+
+  // Stats
+  val statsService: StatsService by lazy { StatsServiceImpl(termRepository, statusRepository) }
+  val statsRoute: StatsRoute by lazy { StatsRoute(statsService) }
 }

@@ -93,6 +93,9 @@ fun Application.module() {
 
     val readingRoutes = ServiceLocator.readingRoutes
     readingRoutes.register(this)
+
+    val statsRoute = ServiceLocator.statsRoute
+    statsRoute.register(this)
   }
 }
 
