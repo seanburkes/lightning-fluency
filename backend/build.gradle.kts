@@ -55,6 +55,9 @@ dependencies {
   // Logging
   implementation("ch.qos.logback:logback-classic:1.5.15")
 
+  // Kuromoji Japanese morphological analyzer
+  implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
+
   // Testing
   testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
   testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

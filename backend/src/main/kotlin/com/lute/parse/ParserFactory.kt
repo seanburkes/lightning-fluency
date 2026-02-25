@@ -7,6 +7,7 @@ class ParserFactory {
       mapOf(
           "spacedel" to SpaceDelimitedParser(),
           "turkish" to TurkishParser(),
+          "japanese" to JapaneseParser(),
       )
 
   fun getParser(parserType: String): Parser {
