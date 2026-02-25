@@ -23,6 +23,22 @@ class TermRepositoryImpl : TermRepository {
         ?.toTerm()
   }
 
+  override fun findByTextsAndLanguage(textLCs: List<String>, languageId: Long): Map<String, Term?> =
+      transaction {
+        if (textLCs.isEmpty()) {
+          return@transaction emptyMap<String, Term?>()
+        }
+        val uniqueTexts = textLCs.map { it.lowercase() }.distinct()
+        val terms =
+            WordsTable.selectAll()
+                .where {
+                  (WordsTable.WoTextLC inList uniqueTexts) and (WordsTable.WoLgID eq languageId)
+                }
+                .map { it.toTerm() }
+        val termMap = terms.associateBy { it.textLC }
+        textLCs.associateWith { termMap[it.lowercase()] }
+      }
+
   override fun findAll(
       languageId: Long?,
       status: Int?,

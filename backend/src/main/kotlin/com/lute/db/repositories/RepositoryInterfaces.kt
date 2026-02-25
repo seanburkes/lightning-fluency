@@ -88,6 +88,8 @@ interface TermRepository {
 
   fun findByTextAndLanguage(textLC: String, languageId: Long): Term?
 
+  fun findByTextsAndLanguage(textLCs: List<String>, languageId: Long): Map<String, Term?>
+
   fun findAll(
       languageId: Long? = null,
       status: Int? = null,

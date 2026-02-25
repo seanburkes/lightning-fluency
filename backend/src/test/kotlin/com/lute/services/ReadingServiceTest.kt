@@ -53,8 +53,8 @@ class ReadingServiceTest {
             ParsedToken(token = " ", isWord = false, order = 1),
             ParsedToken(token = "world", isWord = true, order = 2),
         )
-    every { termRepository.findByTextAndLanguage("hello", 10L) } returns null
-    every { termRepository.findByTextAndLanguage("world", 10L) } returns null
+    every { termRepository.findByTextsAndLanguage(listOf("Hello", " ", "world"), 10L) } returns
+        mapOf("hello" to null, " " to null, "world" to null)
 
     val result = readingService.getPage(1L, 1)
 
@@ -96,7 +96,8 @@ class ReadingServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { parserService.parseText("Hello", language) } returns
         listOf(ParsedToken(token = "Hello", isWord = true, order = 0))
-    every { termRepository.findByTextAndLanguage("hello", 10L) } returns term
+    every { termRepository.findByTextsAndLanguage(listOf("Hello"), 10L) } returns
+        mapOf("hello" to term)
 
     val result = readingService.getPage(1L, 1)
 
@@ -222,9 +223,8 @@ class ReadingServiceTest {
             ParsedToken(token = " ", isWord = false, order = 1),
             ParsedToken(token = "world", isWord = true, order = 2),
         )
-    every { termRepository.findByTextAndLanguage("hello", 1L) } returns term
-    every { termRepository.findByTextAndLanguage(" ", 1L) } returns null
-    every { termRepository.findByTextAndLanguage("world", 1L) } returns null
+    every { termRepository.findByTextsAndLanguage(listOf("Hello", " ", "world"), 1L) } returns
+        mapOf("hello" to term, " " to null, "world" to null)
 
     val result = readingService.parsePageWithTerms("Hello world", 1L)
 
@@ -240,7 +240,7 @@ class ReadingServiceTest {
   }
 
   @Test
-  fun `parsePageWithTerms deduplicates tokens for lookup`() {
+  fun `parsePageWithTerms uses batch lookup for all tokens`() {
     val language = Language(id = 1L, name = "English")
     val term = Term(id = 1L, languageId = 1L, text = "hello", status = 1)
 
@@ -253,13 +253,12 @@ class ReadingServiceTest {
             ParsedToken(token = " ", isWord = false, order = 3),
             ParsedToken(token = "world", isWord = true, order = 4),
         )
-    every { termRepository.findByTextAndLanguage("hello", 1L) } returns term
-    every { termRepository.findByTextAndLanguage(" ", 1L) } returns null
-    every { termRepository.findByTextAndLanguage("world", 1L) } returns null
+    every {
+      termRepository.findByTextsAndLanguage(listOf("hello", " ", "hello", " ", "world"), 1L)
+    } returns mapOf("hello" to term, " " to null, "world" to null)
 
     readingService.parsePageWithTerms("hello hello world", 1L)
 
-    verify(exactly = 1) { termRepository.findByTextAndLanguage("hello", 1L) }
-    verify(exactly = 1) { termRepository.findByTextAndLanguage("world", 1L) }
+    verify(exactly = 1) { termRepository.findByTextsAndLanguage(any(), eq(1L)) }
   }
 }

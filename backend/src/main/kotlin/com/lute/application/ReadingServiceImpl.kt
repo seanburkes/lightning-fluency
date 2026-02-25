@@ -88,14 +88,6 @@ class ReadingServiceImpl(
   }
 
   private fun lookupTermsForPage(tokens: List<String>, languageId: Long): Map<String, Term?> {
-    val result = mutableMapOf<String, Term?>()
-    val uniqueTokens = tokens.map { it.lowercase() }.toSet()
-
-    for (tokenText in uniqueTokens) {
-      val term = termRepository.findByTextAndLanguage(tokenText, languageId)
-      result[tokenText] = term
-    }
-
-    return result
+    return termRepository.findByTextsAndLanguage(tokens, languageId)
   }
 }
