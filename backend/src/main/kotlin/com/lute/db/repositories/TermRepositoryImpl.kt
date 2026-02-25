@@ -59,21 +59,23 @@ class TermRepositoryImpl : TermRepository {
         .map { it.toTerm() }
   }
 
-  override fun save(term: Term): Long = transaction {
-    val effectiveTextLC = term.textLC.ifEmpty { term.text.lowercase() }
-    WordsTable.insert {
-          it[WoLgID] = term.languageId
-          it[WoText] = term.text
-          it[WoTextLC] = effectiveTextLC
-          it[WoStatus] = term.status
-          it[WoTranslation] = term.translation
-          it[WoRomanization] = term.romanization
-          it[WoTokenCount] = term.tokenCount
-          it[WoSyncStatus] = term.syncStatus
-        }[WordsTable.WoID]
-  }
+   private fun insertTerm(term: Term): Long {
+     val effectiveTextLC = term.textLC.ifEmpty { term.text.lowercase() }
+     return WordsTable.insert {
+           it[WoLgID] = term.languageId
+           it[WoText] = term.text
+           it[WoTextLC] = effectiveTextLC
+           it[WoStatus] = term.status
+           it[WoTranslation] = term.translation
+           it[WoRomanization] = term.romanization
+           it[WoTokenCount] = term.tokenCount
+           it[WoSyncStatus] = term.syncStatus
+         }[WordsTable.WoID]
+   }
 
-  override fun update(term: Term): Unit = transaction {
+   override fun save(term: Term): Long = transaction { insertTerm(term) }
+
+   override fun update(term: Term): Unit = transaction {
     WordsTable.update({ WordsTable.WoID eq term.id }) {
       it[WoLgID] = term.languageId
       it[WoText] = term.text
@@ -92,21 +94,7 @@ class TermRepositoryImpl : TermRepository {
     WordsTable.selectAll().where { WordsTable.WoLgID eq languageId }.count().toInt()
   }
 
-  override fun saveAll(terms: List<Term>): List<Long> = transaction {
-    terms.map { term ->
-      val effectiveTextLC = term.textLC.ifEmpty { term.text.lowercase() }
-      WordsTable.insert {
-            it[WoLgID] = term.languageId
-            it[WoText] = term.text
-            it[WoTextLC] = effectiveTextLC
-            it[WoStatus] = term.status
-            it[WoTranslation] = term.translation
-            it[WoRomanization] = term.romanization
-            it[WoTokenCount] = term.tokenCount
-            it[WoSyncStatus] = term.syncStatus
-          }[WordsTable.WoID]
-    }
-  }
+   override fun saveAll(terms: List<Term>): List<Long> = transaction { terms.map { insertTerm(it) } }
 
   override fun deleteAll(ids: List<Long>): Unit = transaction {
     WordsTable.deleteWhere { WoID inList ids }
