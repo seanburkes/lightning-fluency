@@ -1,5 +1,7 @@
 package com.lute.di
 
+import com.lute.application.AudioService
+import com.lute.application.AudioServiceImpl
 import com.lute.application.BookCrudService
 import com.lute.application.BookCrudServiceImpl
 import com.lute.application.BookPageService
@@ -26,6 +28,8 @@ import com.lute.application.PopupService
 import com.lute.application.PopupServiceImpl
 import com.lute.application.ReadingService
 import com.lute.application.ReadingServiceImpl
+import com.lute.application.SentenceParser
+import com.lute.application.SentenceParserImpl
 import com.lute.application.TermBulkService
 import com.lute.application.TermBulkServiceImpl
 import com.lute.application.TermCrudService
@@ -133,7 +137,9 @@ object ServiceLocator {
     BookStatsServiceImpl(bookRepository, bookStatsRepository)
   }
 
-  val bookRoutes: BookRoutes by lazy { BookRoutes(bookService) }
+  val audioService: AudioService by lazy { AudioServiceImpl(bookRepository) }
+
+  val bookRoutes: BookRoutes by lazy { BookRoutes(bookService, audioService) }
 
   val termService: TermService by lazy {
     TermServiceImpl(termCrudService, termBulkService, termCsvService, termRelationshipService)
@@ -173,6 +179,8 @@ object ServiceLocator {
   }
   val readingRoutes: ReadingRoutes by lazy { ReadingRoutes(readingService, popupService) }
 
+  val sentenceParser: SentenceParser by lazy { SentenceParserImpl(parserService) }
+
   // Popup
   val popupService: PopupService by lazy {
     PopupServiceImpl(
@@ -182,6 +190,7 @@ object ServiceLocator {
         languageRepository,
         parserService,
         termCrudService,
+        sentenceParser,
     )
   }
 

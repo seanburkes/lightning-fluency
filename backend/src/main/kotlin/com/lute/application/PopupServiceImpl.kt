@@ -16,6 +16,7 @@ class PopupServiceImpl(
     private val languageRepository: LanguageRepository,
     private val parserService: ParserService,
     private val termCrudService: TermCrudService,
+    private val sentenceParser: SentenceParser,
 ) : PopupService {
   override fun getPopupData(bookId: Long, word: String): PopupDto {
     val book = bookRepository.require(bookId, "Book")
@@ -45,23 +46,9 @@ class PopupServiceImpl(
 
     val text = textRepository.findById(currentTextId) ?: return Pair(null, null)
 
-    val parsedTokens = parserService.parseText(text.text, language)
-
-    val wordLower = word.lowercase()
-    val matchingToken = parsedTokens.find { it.token.lowercase() == wordLower }
-
-    if (matchingToken == null) return Pair(null, null)
-
-    val sentenceNumber = matchingToken.sentenceNumber
-
-    val sentenceTokens = parsedTokens.filter { it.sentenceNumber == sentenceNumber }
-    val sentence = sentenceTokens.joinToString("") { it.token }.trim()
-
-    val contextStart = (sentenceNumber - 1).coerceAtLeast(1)
-    val contextEnd = sentenceNumber + 1
-
-    val contextTokens = parsedTokens.filter { it.sentenceNumber in contextStart..contextEnd }
-    val context = contextTokens.joinToString("") { it.token }.trim()
+    val parsedSentences = sentenceParser.parseSentences(text.text, language)
+    val sentence = parsedSentences.findSentenceForWord(word)
+    val context = parsedSentences.extractContext(word, contextWindow = 1)
 
     return Pair(sentence, context)
   }

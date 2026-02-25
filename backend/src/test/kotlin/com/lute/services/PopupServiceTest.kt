@@ -1,7 +1,9 @@
 package com.lute.services
 
+import com.lute.application.ParsedSentences
 import com.lute.application.ParserService
 import com.lute.application.PopupServiceImpl
+import com.lute.application.SentenceParser
 import com.lute.application.TermCrudService
 import com.lute.application.exceptions.EntityNotFoundException
 import com.lute.db.repositories.BookRepository
@@ -30,6 +32,7 @@ class PopupServiceTest {
   private val languageRepository = mockk<LanguageRepository>(relaxed = true)
   private val parserService = mockk<ParserService>(relaxed = true)
   private val termCrudService = mockk<TermCrudService>(relaxed = true)
+  private val sentenceParser = mockk<SentenceParser>(relaxed = true)
 
   private val popupService =
       PopupServiceImpl(
@@ -39,6 +42,7 @@ class PopupServiceTest {
           languageRepository,
           parserService,
           termCrudService,
+          sentenceParser,
       )
 
   @Test
@@ -84,12 +88,14 @@ class PopupServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { termRepository.findByTextAndLanguage("hello", 10L) } returns term
     every { textRepository.findById(100L) } returns text
-    every { parserService.parseText("Hello world.", language) } returns
-        listOf(
-            ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = "world", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+    every { sentenceParser.parseSentences("Hello world.", language) } returns
+        ParsedSentences(
+            listOf(
+                ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = "world", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+            ),
         )
     every { termCrudService.getTermById(50L) } returns termDto
 
@@ -112,12 +118,14 @@ class PopupServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { termRepository.findByTextAndLanguage("hello", 10L) } returns null
     every { textRepository.findById(100L) } returns text
-    every { parserService.parseText("Hello world.", language) } returns
-        listOf(
-            ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = "world", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+    every { sentenceParser.parseSentences("Hello world.", language) } returns
+        ParsedSentences(
+            listOf(
+                ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = "world", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+            ),
         )
 
     val result = popupService.getPopupData(1L, "Hello")
@@ -135,17 +143,19 @@ class PopupServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { termRepository.findByTextAndLanguage("hello", 10L) } returns null
     every { textRepository.findById(100L) } returns text
-    every { parserService.parseText("Hello world. Goodbye now.", language) } returns
-        listOf(
-            ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = "world", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
-            ParsedToken(token = "Goodbye", isWord = true, sentenceNumber = 2),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
-            ParsedToken(token = "now", isWord = true, sentenceNumber = 2),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 2),
+    every { sentenceParser.parseSentences("Hello world. Goodbye now.", language) } returns
+        ParsedSentences(
+            listOf(
+                ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = "world", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
+                ParsedToken(token = "Goodbye", isWord = true, sentenceNumber = 2),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
+                ParsedToken(token = "now", isWord = true, sentenceNumber = 2),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 2),
+            ),
         )
 
     val result = popupService.getPopupData(1L, "Hello")
@@ -163,22 +173,24 @@ class PopupServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { termRepository.findByTextAndLanguage("hello", 10L) } returns null
     every { textRepository.findById(100L) } returns text
-    every { parserService.parseText("First one. Hello world. Last one.", language) } returns
-        listOf(
-            ParsedToken(token = "First", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = "one", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
-            ParsedToken(token = "Hello", isWord = true, sentenceNumber = 2),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
-            ParsedToken(token = "world", isWord = true, sentenceNumber = 2),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 2),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 3),
-            ParsedToken(token = "Last", isWord = true, sentenceNumber = 3),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 3),
-            ParsedToken(token = "one", isWord = true, sentenceNumber = 3),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 3),
+    every { sentenceParser.parseSentences("First one. Hello world. Last one.", language) } returns
+        ParsedSentences(
+            listOf(
+                ParsedToken(token = "First", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = "one", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
+                ParsedToken(token = "Hello", isWord = true, sentenceNumber = 2),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 2),
+                ParsedToken(token = "world", isWord = true, sentenceNumber = 2),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 2),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 3),
+                ParsedToken(token = "Last", isWord = true, sentenceNumber = 3),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 3),
+                ParsedToken(token = "one", isWord = true, sentenceNumber = 3),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 3),
+            ),
         )
 
     val result = popupService.getPopupData(1L, "Hello")
@@ -214,14 +226,16 @@ class PopupServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { termRepository.findByTextAndLanguage("hello", 10L) } returns null
     every { textRepository.findById(100L) } returns text
-    every { parserService.parseText("Different words here.", language) } returns
-        listOf(
-            ParsedToken(token = "Different", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = "words", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
-            ParsedToken(token = "here", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+    every { sentenceParser.parseSentences("Different words here.", language) } returns
+        ParsedSentences(
+            listOf(
+                ParsedToken(token = "Different", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = "words", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = " ", isWord = false, sentenceNumber = 1),
+                ParsedToken(token = "here", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+            ),
         )
 
     val result = popupService.getPopupData(1L, "Hello")
@@ -249,10 +263,12 @@ class PopupServiceTest {
     every { languageRepository.findById(10L) } returns language
     every { termRepository.findByTextAndLanguage("hello", 10L) } returns term
     every { textRepository.findById(100L) } returns text
-    every { parserService.parseText("Hello.", language) } returns
-        listOf(
-            ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
-            ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+    every { sentenceParser.parseSentences("Hello.", language) } returns
+        ParsedSentences(
+            listOf(
+                ParsedToken(token = "Hello", isWord = true, sentenceNumber = 1),
+                ParsedToken(token = ".", isWord = false, sentenceNumber = 1),
+            ),
         )
     every { termCrudService.getTermById(50L) } returns termDto
 
