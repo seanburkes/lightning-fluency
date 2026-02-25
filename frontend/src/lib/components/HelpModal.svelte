@@ -24,7 +24,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-{#if $keyboard.helpOpen}
+{#if keyboard.helpOpen}
 	<div
 		class="modal-backdrop"
 		onclick={() => keyboard.closeHelp()}
