@@ -105,6 +105,8 @@ interface TermRepository {
 
   fun countByLanguage(languageId: Long): Int
 
+  fun countByStatus(status: Int): Int
+
   fun saveAll(terms: List<Term>): List<Long>
 
   fun deleteAll(ids: List<Long>)

@@ -90,11 +90,15 @@ class TermRepositoryImpl : TermRepository {
 
   override fun delete(id: Long): Unit = transaction { WordsTable.deleteWhere { WoID eq id } }
 
-  override fun countByLanguage(languageId: Long): Int = transaction {
-    WordsTable.selectAll().where { WordsTable.WoLgID eq languageId }.count().toInt()
-  }
+   override fun countByLanguage(languageId: Long): Int = transaction {
+     WordsTable.selectAll().where { WordsTable.WoLgID eq languageId }.count().toInt()
+   }
 
-   override fun saveAll(terms: List<Term>): List<Long> = transaction { terms.map { insertTerm(it) } }
+   override fun countByStatus(status: Int): Int = transaction {
+     WordsTable.selectAll().where { WordsTable.WoStatus eq status }.count().toInt()
+   }
+
+    override fun saveAll(terms: List<Term>): List<Long> = transaction { terms.map { insertTerm(it) } }
 
   override fun deleteAll(ids: List<Long>): Unit = transaction {
     WordsTable.deleteWhere { WoID inList ids }
