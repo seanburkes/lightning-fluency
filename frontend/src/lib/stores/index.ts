@@ -1,5 +1,5 @@
 export { settings, type Settings } from './settings.svelte';
-export { keyboard, type KeyboardShortcut } from './keyboard';
-export { navigation } from './navigation';
-export { termPopup, type TermPopupState } from './termPopup';
+export { keyboard, type KeyboardShortcut } from './keyboard.svelte';
+export { navigation } from './navigation.svelte';
+export { termPopup, type TermPopupState } from './termPopup.svelte';
 export { createStore, createActionStore } from './utils';
