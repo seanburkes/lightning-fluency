@@ -35,8 +35,10 @@ class BookRepositoryImpl : BookRepository {
         .map { it.toBook() }
   }
 
-  override fun save(book: Book): Long = transaction {
-    BooksTable.insert {
+  override fun save(book: Book): Long = transaction { insertBook(book) }
+
+  private fun insertBook(book: Book): Long {
+    return BooksTable.insert {
           it[BkLgID] = book.languageId
           it[BkTitle] = book.title
           it[BkSourceURI] = book.sourceURI
@@ -67,20 +69,7 @@ class BookRepositoryImpl : BookRepository {
 
   override fun delete(id: Long): Unit = transaction { BooksTable.deleteWhere { BkID eq id } }
 
-  override fun saveAll(books: List<Book>): List<Long> = transaction {
-    books.map { book ->
-      BooksTable.insert {
-            it[BkLgID] = book.languageId
-            it[BkTitle] = book.title
-            it[BkSourceURI] = book.sourceURI
-            it[BkArchived] = if (book.archived) 1 else 0
-            it[BkCurrentTxID] = book.currentTextId
-            it[BkAudioFilename] = book.audioFilename
-            it[BkAudioCurrentPos] = book.audioCurrentPos
-            it[BkAudioBookmarks] = book.audioBookmarks
-          }[BooksTable.BkID]
-    }
-  }
+  override fun saveAll(books: List<Book>): List<Long> = transaction { books.map { insertBook(it) } }
 
   override fun deleteAll(ids: List<Long>): Unit = transaction {
     BooksTable.deleteWhere { BkID inList ids }
