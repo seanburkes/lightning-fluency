@@ -94,6 +94,23 @@ export interface UpdateTermDto {
 	status?: number;
 }
 
+export interface SettingValue {
+	value: string | null;
+	keyType: string;
+}
+
+export type SettingsMap = Record<string, SettingValue>;
+
+export interface HotkeyConfig {
+	action: string;
+	hotkey: string;
+	description: string;
+}
+
+export interface ThemeDto {
+	name: string;
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
 	if (!response.ok) {
 		const error = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -200,7 +217,40 @@ export const api = {
 			if (status !== undefined) params.set('status', String(status));
 			return fetch(`${API_BASE}/terms/search?${params}`).then(handleResponse<TermDto[]>);
 		}
+	},
+	settings: {
+		getAll: () => fetch(`${API_BASE}/settings`).then(handleResponse<SettingsMap>),
+		set: (key: string, value: string) =>
+			fetch(`${API_BASE}/settings/${key}`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ value, keyType: inferKeyType(value) })
+			}).then(handleResponse<{ success: boolean }>)
+	},
+	themes: {
+		getAll: () => fetch(`${API_BASE}/themes`).then(handleResponse<ThemeDto[]>),
+		getCss: (name: string) =>
+			fetch(`${API_BASE}/themes/${name}/css`).then(handleResponse<{ css: string }>)
+	},
+	hotkeys: {
+		getAll: () => fetch(`${API_BASE}/hotkeys`).then(handleResponse<HotkeyConfig[]>),
+		set: (config: HotkeyConfig[]) =>
+			fetch(`${API_BASE}/hotkeys`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(config)
+			}).then(handleResponse<{ success: boolean }>),
+		reset: () =>
+			fetch(`${API_BASE}/hotkeys/reset`, { method: 'POST' }).then(
+				handleResponse<{ success: boolean }>
+			)
 	}
 };
+
+function inferKeyType(value: string): string {
+	if (value === 'true' || value === 'false') return 'bool';
+	if (/^\d+$/.test(value)) return 'int';
+	return 'str';
+}
 
 export const fetchHealth = api.health.get;
