@@ -2,12 +2,16 @@
 	import { onMount } from 'svelte';
 	import { pwaInfo } from 'virtual:pwa-info';
 	import '../app.css';
-	import { keyboard, navigation, termPopup, syncStatus } from '$lib/stores';
+	import { keyboard, navigation, termPopup, syncStatus, settings } from '$lib/stores';
 	import { HelpModal, InstallPrompt, SyncIndicator } from '$lib/components';
 
 	let { children } = $props();
 
 	let webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
+
+	onMount(() => {
+		settings.initialize();
+	});
 
 	function handleOnline() {
 		syncStatus.setOnline(true);
