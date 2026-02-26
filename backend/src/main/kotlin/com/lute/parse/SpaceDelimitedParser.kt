@@ -41,7 +41,7 @@ open class SpaceDelimitedParser : Parser {
     return tokens
   }
 
-  override fun getReading(text: String): String? = null
+  override fun getReading(text: String, format: String): String? = null
 
   override fun getLowercase(text: String): String = text.lowercase()
 

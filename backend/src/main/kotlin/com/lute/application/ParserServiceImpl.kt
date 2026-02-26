@@ -10,9 +10,9 @@ class ParserServiceImpl(private val parserFactory: ParserFactory) : ParserServic
     return parser.parse(text, language)
   }
 
-  override fun getReading(text: String, language: Language): String? {
+  override fun getReading(text: String, language: Language, format: String): String? {
     val parser = parserFactory.getParserForLanguage(language)
-    return parser.getReading(text)
+    return parser.getReading(text, format)
   }
 
   override fun getLowercase(text: String, language: Language): String {

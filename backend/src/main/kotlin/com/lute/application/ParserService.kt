@@ -6,7 +6,7 @@ import com.lute.parse.ParsedToken
 interface ParserService {
   fun parseText(text: String, language: Language): List<ParsedToken>
 
-  fun getReading(text: String, language: Language): String?
+  fun getReading(text: String, language: Language, format: String = "as-is"): String?
 
   fun getLowercase(text: String, language: Language): String
 }

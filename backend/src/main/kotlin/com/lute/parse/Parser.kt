@@ -7,7 +7,7 @@ interface Parser {
 
   fun parse(text: String, language: Language): List<ParsedToken>
 
-  fun getReading(text: String): String?
+  fun getReading(text: String, format: String = "as-is"): String?
 
   fun getLowercase(text: String): String
 }

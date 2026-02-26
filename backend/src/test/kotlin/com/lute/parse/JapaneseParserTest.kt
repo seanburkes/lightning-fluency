@@ -88,4 +88,70 @@ class JapaneseParserTest {
     val lowercase = parser.getLowercase("日本語")
     assertEquals("にほんご", lowercase)
   }
+
+  @Test
+  fun `getFurigana returns inline furigana for kanji`() {
+    val furigana = parser.getReading("日本語", "furigana")
+    assertEquals("日本語(にほんご)", furigana)
+  }
+
+  @Test
+  fun `getFurigana returns null for hiragana only`() {
+    val furigana = parser.getReading("にほんご", "furigana")
+    assertNull(furigana)
+  }
+
+  @Test
+  fun `getFurigana returns text without annotation for katakana`() {
+    val furigana = parser.getReading("コンピューター", "furigana")
+    assertEquals("コンピューター", furigana)
+  }
+
+  @Test
+  fun `getFurigana handles empty input`() {
+    val furigana = parser.getReading("", "furigana")
+    assertNull(furigana)
+  }
+
+  @Test
+  fun `getHtmlFurigana returns HTML ruby markup`() {
+    val html = parser.getReading("日本語", "html-furigana")
+    assertEquals("<ruby>日本語<rt>にほんご</rt></ruby>", html)
+  }
+
+  @Test
+  fun `getHtmlFurigana handles multiple tokens`() {
+    val html = parser.getReading("日本語勉強", "html-furigana")
+    assertEquals("<ruby>日本語<rt>にほんご</rt></ruby><ruby>勉強<rt>べんきょう</rt></ruby>", html)
+  }
+
+  @Test
+  fun `getReading with furigana format returns furigana`() {
+    val reading = parser.getReading("日本語", "furigana")
+    assertEquals("日本語(にほんご)", reading)
+  }
+
+  @Test
+  fun `getReading with hiragana format returns hiragana`() {
+    val reading = parser.getReading("日本語", "hiragana")
+    assertEquals("にほんご", reading)
+  }
+
+  @Test
+  fun `getReading with katakana format returns katakana`() {
+    val reading = parser.getReading("日本語", "katakana")
+    assertEquals("ニホンゴ", reading)
+  }
+
+  @Test
+  fun `getReading with romaji format returns romaji`() {
+    val reading = parser.getReading("日本語", "romaji")
+    assertEquals("nihongo", reading)
+  }
+
+  @Test
+  fun `getReading with alphabet format returns romaji`() {
+    val reading = parser.getReading("日本語", "alphabet")
+    assertEquals("nihongo", reading)
+  }
 }
