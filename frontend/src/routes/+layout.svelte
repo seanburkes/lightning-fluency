@@ -1,9 +1,52 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { pwaInfo } from 'virtual:pwa-info';
 	import '../app.css';
-	import { keyboard, navigation, termPopup } from '$lib/stores';
-	import { HelpModal } from '$lib/components';
+	import { keyboard, navigation, termPopup, syncStatus } from '$lib/stores';
+	import { HelpModal, InstallPrompt, SyncIndicator } from '$lib/components';
 
 	let { children } = $props();
+
+	let webManifestLink = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '');
+
+	function handleOnline() {
+		syncStatus.setOnline(true);
+	}
+
+	function handleOffline() {
+		syncStatus.setOnline(false);
+	}
+
+	onMount(() => {
+		if (pwaInfo) {
+			import('virtual:pwa-register').then(({ registerSW }) => {
+				registerSW({
+					immediate: true,
+					onRegisteredSW(swUrl, registration) {
+						if (registration) {
+							setInterval(
+								() => {
+									registration.update();
+								},
+								60 * 60 * 1000
+							);
+						}
+					}
+				});
+			});
+		}
+
+		window.addEventListener('online', handleOnline);
+		window.addEventListener('offline', handleOffline);
+		syncStatus.refreshCount().catch(() => {
+			// IndexedDB may not be available
+		});
+
+		return () => {
+			window.removeEventListener('online', handleOnline);
+			window.removeEventListener('offline', handleOffline);
+		};
+	});
 
 	const shortcuts = [
 		{ key: 'ArrowRight', description: 'Next page' },
@@ -65,7 +108,11 @@
 
 <svelte:head>
 	<link rel="icon" href="/favicon.svg" />
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html webManifestLink}
 </svelte:head>
 
 {@render children()}
 <HelpModal {shortcuts} />
+<InstallPrompt />
+<SyncIndicator />
