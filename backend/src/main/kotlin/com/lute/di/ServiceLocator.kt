@@ -65,10 +65,13 @@ import com.lute.db.repositories.TextRepositoryImpl
 import com.lute.parse.ParserFactory
 import com.lute.presentation.BookRoutes
 import com.lute.presentation.HealthRoute
+import com.lute.presentation.HotkeyRoute
 import com.lute.presentation.LanguageRoutes
 import com.lute.presentation.ReadingRoutes
+import com.lute.presentation.SettingsRoute
 import com.lute.presentation.StatsRoute
 import com.lute.presentation.TermRoutes
+import com.lute.presentation.ThemeRoute
 
 object ServiceLocator {
   // Health
@@ -202,4 +205,9 @@ object ServiceLocator {
   // Stats
   val statsService: StatsService by lazy { StatsServiceImpl(termRepository, statusRepository) }
   val statsRoute: StatsRoute by lazy { StatsRoute(statsService) }
+
+  // Settings
+  val settingsRoute: SettingsRoute by lazy { SettingsRoute(settingsRepository) }
+  val themeRoute: ThemeRoute by lazy { ThemeRoute() }
+  val hotkeyRoute: HotkeyRoute by lazy { HotkeyRoute(settingsRepository) }
 }

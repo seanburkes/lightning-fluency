@@ -96,6 +96,15 @@ fun Application.module() {
 
     val statsRoute = ServiceLocator.statsRoute
     statsRoute.register(this)
+
+    val settingsRoute = ServiceLocator.settingsRoute
+    settingsRoute.register(this)
+
+    val themeRoute = ServiceLocator.themeRoute
+    themeRoute.register(this)
+
+    val hotkeyRoute = ServiceLocator.hotkeyRoute
+    hotkeyRoute.register(this)
   }
 }
 
